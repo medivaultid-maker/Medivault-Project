@@ -22,3 +22,15 @@ pnpm-debug.log*
 
 # Supabase temporary files
 supabase/.temp/
+
+# Supabase CLI temporary files
+supabase/.temp/
+
+# macOS
+.DS_Store
+
+# Local environment
+.env
+.env.local
+.env.development.local
+.env.production.local
