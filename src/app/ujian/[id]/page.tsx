@@ -1,0 +1,641 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Navbar from "../../components/Navbar";
+import { supabase } from "../../lib/supabase";
+import { useParams, useSearchParams } from "next/navigation";
+
+type QuestionItem = {
+  id: string;
+  question: string;
+  image?: string;
+  options: string[];
+  answer: number;
+  discussion: string;
+  discussionImage?: string;
+};
+
+type ExamPackage = {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  totalQuestions: number;
+  duration: number;
+  tokenCost: number;
+  pdfName: string;
+  questions: QuestionItem[];
+  status: "published";
+};
+
+type ExamHistoryItem = {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  score: number;
+  correctCount: number;
+  totalQuestions: number;
+  status: "Lulus" | "Belum Lulus";
+};
+
+export default function UjianPage() {
+  const params = useParams();
+const searchParams = useSearchParams();
+
+const id = params.id as string;
+const attemptId = searchParams.get("attempt");
+useEffect(() => {
+  if (attemptId) {
+    localStorage.setItem(
+      "medivault_attempt_id",
+      attemptId
+    );
+  }
+}, [attemptId]);
+  console.log("PARAMS =", params);
+console.log("ID =", id);
+console.log("URL =", window.location.pathname);
+
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<ExamPackage | null>(null);
+
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState<(number | null)[]>([]);
+  const [doubt, setDoubt] = useState<boolean[]>([]);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [token, setToken] = useState(0);
+
+  const questions = selectedPackage?.questions ?? [];
+  const question = questions[current];
+
+  useEffect(() => {
+  const loadExam = async () => {
+    try {
+
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  window.location.href = "/login";
+  return;
+}
+
+const currentAttemptId =
+  attemptId || localStorage.getItem("medivault_attempt_id");
+
+let session: any = null;
+
+if (currentAttemptId) {
+  const { data } = await supabase
+    .from("exam_sessions")
+    .select("finished, started_at, duration")
+    .eq("attempt_id", currentAttemptId)
+    .single();
+
+  session = data;
+
+  if (session?.finished) {
+    window.location.replace(`/hasil/${currentAttemptId}`);
+    return;
+  }
+}
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("role, token")
+  .eq("id", user.id)
+  .single();
+
+if (profile?.role === "admin") {
+  window.location.href = "/admin";
+  return;
+}
+
+if (profile?.role !== "user") {
+  window.location.href = "/login";
+  return;
+}
+
+const savedToken = profile?.token || 0;
+
+console.log("ID =", id);
+
+// Ambil paket dari Supabase berdasarkan id di URL
+const { data: packageData, error: packageError } = await supabase
+  .from("exam_packages")
+  .select("*")
+  .eq("id", id)
+  .single();
+
+  console.log("PACKAGE =", packageData);
+console.log("PACKAGE ERROR =", packageError);
+
+if (packageError || !packageData) {
+  alert("Paket tidak ditemukan");
+  window.location.href = "/simulasi";
+  return;
+}
+
+// Ambil soal dari Supabase
+const { data: questions, error: questionError } = await supabase
+  .from("questions")
+  .select("*")
+  .eq("package_id", id)
+  .order("order_no", { ascending: true })
+
+  console.log("QUESTIONS =", questions);
+console.log("QUESTION ERROR =", questionError);
+
+const { data: allQuestions, error: allQuestionsError } = await supabase
+  .from("questions")
+  .select("id, package_id, question");
+
+console.log("ALL QUESTIONS =", allQuestions);
+console.log("ALL QUESTIONS ERROR =", allQuestionsError);
+
+if (questionError || !questions || questions.length === 0) {
+  alert("Soal tidak ditemukan");
+  window.location.href = "/simulasi";
+  return;
+}
+
+const parsedPackage: ExamPackage = {
+  id: packageData.id,
+  category: packageData.category,
+  title: packageData.title,
+  description: "",
+  totalQuestions: packageData.total_questions,
+  duration: packageData.duration,
+  tokenCost: packageData.token_cost,
+  pdfName: "",
+  status: "published",
+ questions: questions.map((q: any) => ({
+  id: q.id,
+  question: q.question,
+  image: q.image,
+  options: q.options,
+  answer: q.answer,
+  discussion: q.discussion,
+  discussionImage: q.discussion_image,
+})),
+};
+
+      const savedCurrent = localStorage.getItem(
+  `exam-current-${parsedPackage.id}`
+);
+
+const savedAnswers = localStorage.getItem(
+  `exam-answers-${parsedPackage.id}`
+);
+
+const savedDoubt = localStorage.getItem(
+  `exam-doubt-${parsedPackage.id}`
+);
+
+const initialAnswers =
+  savedAnswers
+    ? JSON.parse(savedAnswers)
+    : Array(parsedPackage.questions.length).fill(null);
+
+const initialDoubt =
+  savedDoubt
+    ? JSON.parse(savedDoubt)
+    : Array(parsedPackage.questions.length).fill(false);
+
+setSelectedPackage(parsedPackage);
+setCurrent(savedCurrent ? Number(savedCurrent) : 0);
+setAnswers(initialAnswers);
+setDoubt(initialDoubt);
+const startedAt = new Date(session.started_at).getTime();
+
+const endTime =
+  startedAt + session.duration * 60 * 1000;
+
+const remaining = Math.max(
+  0,
+  Math.floor((endTime - Date.now()) / 1000)
+);
+if (remaining <= 0) {
+  submitExam();
+  return;
+}
+setTimeLeft(remaining);
+setToken(savedToken);
+setCheckingAccess(false);
+    } catch {
+      window.location.href = "/simulasi";
+    }
+    };
+
+loadExam();
+}, []);
+
+ useEffect(() => {
+  if (answers.length > 0) {
+    // kosong
+  }
+}, [answers]);
+useEffect(() => {
+  if (!selectedPackage) return;
+
+  localStorage.setItem(
+    `exam-current-${selectedPackage.id}`,
+    current.toString()
+  );
+}, [current, selectedPackage]);
+useEffect(() => {
+  if (!selectedPackage) return;
+
+  localStorage.setItem(
+    `exam-answers-${selectedPackage.id}`,
+    JSON.stringify(answers)
+  );
+
+  localStorage.setItem(
+    `exam-doubt-${selectedPackage.id}`,
+    JSON.stringify(doubt)
+  );
+}, [answers, doubt, selectedPackage]);
+
+
+
+  useEffect(() => {
+    if (checkingAccess || submitted || !selectedPackage) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          submitExam();
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [checkingAccess, submitted, selectedPackage, answers]);
+
+  const score = answers.reduce((total, answer, index) => {
+  return answer === selectedPackage?.questions[index]?.answer
+    ? total + 1
+    : total;
+}, 0);
+
+  const formatTime = (seconds: number) => {
+    const minute = Math.floor(seconds / 60);
+    const second = seconds % 60;
+
+    return `${String(minute).padStart(2, "0")}:${String(second).padStart(
+      2,
+      "0"
+    )}`;
+  };
+
+  const chooseAnswer = (optionIndex: number) => {
+    const copy = [...answers];
+    copy[current] = optionIndex;
+    setAnswers(copy);
+  };
+
+  const toggleDoubt = () => {
+    const copy = [...doubt];
+    copy[current] = !copy[current];
+    setDoubt(copy);
+  };
+
+  const goNext = () => {
+    if (current < (selectedPackage?.questions.length ?? 0) - 1) {
+      setCurrent(current + 1);
+    }
+  };
+
+  const goBack = () => {
+    if (current > 0) {
+      setCurrent(current - 1);
+    }
+  };
+
+  const confirmSubmit = () => {
+  const unanswered = answers.filter((a) => a === null).length;
+
+  const message =
+    unanswered > 0
+      ? `Masih ada ${unanswered} soal yang belum dijawab.\n\nYakin ingin mengakhiri ujian?`
+      : "Semua soal sudah dijawab.\n\nYakin ingin mengakhiri ujian?";
+
+  if (!window.confirm(message)) return;
+
+  submitExam();
+};
+
+  async function submitExam() {
+  if (submitted || !selectedPackage) return;
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) return;
+
+setSubmitted(true);
+
+  const totalQuestions = selectedPackage.questions.length;
+
+  const correctCount = answers.reduce((total, answer, index) => {
+    return answer === selectedPackage.questions[index]?.answer
+      ? total + 1
+      : total;
+  }, 0);
+
+  const unansweredCount = answers.filter((answer) => answer === null).length;
+
+  const wrongCount = answers.reduce((total, answer, index) => {
+    if (answer === null) return total;
+    return answer !== selectedPackage.questions[index]?.answer
+      ? total + 1
+      : total;
+  }, 0);
+
+  const doubtCount = doubt.filter((item) => item === true).length;
+
+  const finalScore = Math.round((correctCount / totalQuestions) * 100);
+
+  const savedAttemptId = localStorage.getItem("medivault_attempt_id");
+
+const currentAttemptId = attemptId || savedAttemptId;
+
+if (!currentAttemptId) {
+  alert("Session ujian tidak ditemukan.");
+  return;
+}
+
+console.log("AUTH USER =", user);
+console.log("AUTH UID =", user.id);
+
+console.log("INSERT DATA =", {
+  user_id: user.id,
+  package_id: selectedPackage.id,
+  score: finalScore,
+  passing_grade: 70,
+  correct_count: correctCount,
+  wrong_count: wrongCount,
+  unanswered_count: unansweredCount,
+  doubt_count: doubtCount,
+  total_questions: totalQuestions,
+  duration: selectedPackage.duration,
+  status: finalScore >= 70 ? "Lulus" : "Belum Lulus",
+});
+
+const { error: attemptError } = await supabase
+  .from("exam_attempts")
+  .update({
+    score: finalScore,
+    passing_grade: 70,
+    correct_count: correctCount,
+    wrong_count: wrongCount,
+    unanswered_count: unansweredCount,
+    doubt_count: doubtCount,
+    total_questions: totalQuestions,
+    duration: selectedPackage.duration,
+    status: finalScore >= 70 ? "Lulus" : "Belum Lulus",
+  })
+  .eq("id", currentAttemptId);
+
+console.log("ATTEMPT ERROR =", attemptError);
+
+if (attemptError) {
+  setSubmitted(false);
+  alert(attemptError.message);
+  return;
+}
+
+const answerRows = selectedPackage.questions.map((question: any, index) => ({
+  attempt_id: currentAttemptId,
+  question_id: question.id,
+  selected_answer: answers[index],
+  is_correct: answers[index] === question.answer,
+  is_doubt: doubt[index],
+}));
+
+const { error: answerError } = await supabase
+  .from("attempt_answers")
+  .insert(answerRows);
+
+if (answerError) {
+  setSubmitted(false);
+  console.error(answerError);
+  alert(answerError.message);
+  return;
+}
+await supabase
+  .from("exam_sessions")
+  .update({
+    finished: true,
+  })
+  .eq("attempt_id", currentAttemptId);
+
+  localStorage.removeItem("medivault_attempt_id");
+
+localStorage.removeItem(`exam-current-${selectedPackage.id}`);
+localStorage.removeItem(`exam-answers-${selectedPackage.id}`);
+localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
+
+
+window.location.href = `/hasil/${currentAttemptId}`;
+}
+
+  if (checkingAccess || !selectedPackage || !question) {
+    return (
+      <main>
+        <Navbar />
+
+        <section className="flex min-h-screen items-center justify-center bg-[#f8fbff] px-6">
+          <div className="rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-sm">
+            <h1 className="text-2xl font-extrabold text-[#061B3A]">
+              Memeriksa akses ujian...
+            </h1>
+
+            <p className="mt-2 text-slate-500">
+              Pastikan kamu sudah login, memiliki token, dan memilih paket soal.
+            </p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#f8fbff]">
+      <Navbar />
+
+      <section className="px-6 py-8 md:px-10">
+        {!submitted ? (
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
+                <div>
+                  <p className="mb-2 font-extrabold text-emerald-600">
+                    Latihan CBT
+                  </p>
+
+                  <h1 className="text-3xl font-extrabold text-[#061B3A]">
+                    {selectedPackage.title}
+                  </h1>
+
+                  <p className="mt-2 font-bold text-slate-500">
+                  </p>
+                </div>
+
+                <div className="w-fit rounded-2xl bg-[#061B3A] px-6 py-4 text-center text-white">
+                  <p className="text-xs opacity-80">Sisa Waktu</p>
+                  <p className="text-3xl font-extrabold">
+                    {formatTime(timeLeft)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            
+                  <div className="flex flex-col-reverse md:flex-row gap-6">
+  {/* Soal & Pilihan */}
+  <div className="flex-1">
+    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+      <div className="mb-4 flex justify-between text-sm font-bold text-slate-500">
+        <span>Soal {current + 1}</span>
+        <span>dari {selectedPackage?.questions.length ?? 0} soal</span>
+      </div>
+
+     <h2 className="mb-5 whitespace-pre-wrap text-xl leading-relaxed text-[#061B3A]">
+  {question.question}
+</h2>
+
+      <div className="space-y-3">
+        {question.options.map((option, index) => (
+          <button
+            key={index}
+            onClick={() => chooseAnswer(index)}
+            className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${
+              answers[current] === index
+                ? "border-emerald-400 bg-emerald-50 font-bold text-emerald-700"
+                : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300"
+            }`}
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-extrabold text-[#061B3A]">
+              {String.fromCharCode(65 + index)}
+            </span>
+            <span>{option}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button onClick={goBack} className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-extrabold text-[#061B3A]">
+          Back
+        </button>
+
+        <button
+          onClick={toggleDoubt}
+          className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-3 font-extrabold text-amber-700"
+        >
+          {doubt[current] ? "Batal Ragu-ragu" : "Ragu-ragu"}
+        </button>
+
+        <button onClick={goNext} className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-extrabold text-[#061B3A]">
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Sidebar Nomor Soal */}
+  {/* Sidebar Nomor Soal */}
+<aside className="w-full md:w-56 flex-shrink-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm md:h-[80vh] flex flex-col">
+  <h3 className="mb-4 text-lg font-extrabold text-[#061B3A]">
+    Nomor Soal
+  </h3>
+
+  {/* Scroll Area */}
+  <div className="flex-1 overflow-y-auto pr-2">
+    <div className="grid grid-cols-5 gap-3">
+      {questions.map((_, index) => {
+        const answered = answers[index] !== null;
+        const isDoubt = doubt[index];
+        const active = current === index;
+
+        return (
+          <button
+            key={index}
+            onClick={() => setCurrent(index)}
+            className={`h-10 rounded-lg border text-sm font-extrabold transition ${
+              active
+                ? "border-[#061B3A] bg-[#061B3A] text-white"
+                : isDoubt
+                ? "border-amber-300 bg-amber-50 text-amber-700"
+                : answered
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                : "border-slate-200 bg-slate-50 text-[#061B3A]"
+            }`}
+          >
+            {index + 1}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+  <div className="mt-5 space-y-2 text-sm font-semibold text-slate-500">
+    <div className="flex items-center gap-2">
+      <span className="h-3 w-3 rounded bg-emerald-500" />
+      Dijawab
+    </div>
+    <div className="flex items-center gap-2">
+      <span className="h-3 w-3 rounded bg-amber-500" />
+      Ragu-ragu
+    </div>
+    <div className="flex items-center gap-2">
+      <span className="h-3 w-3 rounded bg-slate-300" />
+      Belum dijawab
+    </div>
+  </div>
+
+  <button
+  onClick={confirmSubmit}
+    className="mt-5 w-full rounded-2xl bg-emerald-500 px-5 py-3 font-extrabold text-white"
+  >
+    Submit Ujian
+  </button>
+</aside>
+</div>
+          </div>
+        ) : (
+          <div className="mx-auto mt-20 max-w-xl rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-sm">
+            <p className="mb-2 font-extrabold text-emerald-600">
+              Ujian Selesai
+            </p>
+
+            <p className="mt-6 text-xl font-extrabold text-slate-700">
+              Skor kamu: {score} / {selectedPackage?.questions.length ?? 0}
+            </p>
+
+            <p className="mt-2 font-bold text-slate-500">
+              Sisa token: {token}
+            </p>
+
+            <button
+              onClick={() => {
+                window.location.href = "/hasil";
+              }}
+              className="mt-6 w-full rounded-2xl bg-emerald-500 px-6 py-4 font-extrabold text-white"
+            >
+              Lihat Hasil & Pembahasan
+            </button>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
