@@ -162,7 +162,9 @@ packages.forEach((p) =>
 const filteredPackages = packages.filter(
   (p) => p.category.trim() === kategori.trim()
 );
-  const filteredHistory = history.filter((h) => h.category === kategori);
+ const filteredHistory = history
+  .filter((h) => h.category === kategori)
+  .slice(0, 5);
 
   const categoryTitle = categoryLabels[kategori] || "Paket Soal";
 
@@ -179,15 +181,17 @@ const chartData = filteredHistory
 
 console.table(chartData);
 
+console.log("Lebar layar =", window.innerWidth);
+
 return (
-    <main className="min-h-screen bg-slate-50">
+  <main className="min-h-screen bg-slate-50 overflow-x-hidden">
       <Navbar />
 
       <section className="px-6 py-10 md:px-10">
 
         {/* HEADER */}
         <div className="mx-auto mt-8 max-w-7xl text-center">
-  <h1 className="text-4xl font-extrabold text-[#061B3A]">
+<h1 className="text-3xl md:text-4xl font-extrabold text-[#061B3A]">
     {categoryTitle}
   </h1>
 
@@ -198,8 +202,7 @@ return (
         
         </div>
         <hr className="mx-auto mt-8 mb-10 max-w-7xl border-slate-200" />
-<div className="mx-auto grid max-w-7xl gap-8 items-start lg:grid-cols-[380px_1fr]">
-
+<div className="mx-auto w-full max-w-7xl grid items-start gap-6 lg:grid-cols-[340px_1fr]">
   {/* KOLOM KIRI */}
   <div className="space-y-6">
 
@@ -225,9 +228,9 @@ return (
 
         {filteredPackages.map((item) => (
           <div
-            key={item.id}
-            className="rounded-2xl border p-4"
-          >
+  key={item.id}
+  className="w-full rounded-2xl border p-4"
+>
             <h3 className="font-bold text-lg">
               {item.title}
             </h3>
@@ -260,7 +263,6 @@ return (
     </div>
 
   {/* KOLOM KANAN */}
-  <div className="-mt-6 space-y-6">
     
         {/* HISTORY */}
         <div className="w-full mt-0">
@@ -279,7 +281,7 @@ return (
   Perkembangan Hasil Latihan
 </h3>
 
-              <div className="h-[300px] w-full">
+              <div className="h-[240px] md:h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     
@@ -344,7 +346,7 @@ return (
 ) : (
   <div className="mt-6 overflow-hidden rounded-3xl border bg-white shadow-sm">
 
-    <div className="grid grid-cols-[60px_2fr_100px_220px_160px_100px] items-center gap-4 border-b bg-slate-50 p-4 text-sm font-bold text-slate-500">
+    <div className="hidden md:grid grid-cols-[60px_3fr_90px_180px_150px] items-center gap-4 border-b bg-slate-50 p-4 text-sm font-bold text-slate-500">
   <span>No</span>
   <span>Judul Latihan</span>
   <span>Skor</span>
@@ -360,7 +362,7 @@ return (
               
               <div
   key={item.id}
-  className="grid grid-cols-[60px_2fr_100px_220px_160px_100px] items-center gap-4 border-b p-4 text-sm"
+  className="hidden md:grid grid-cols-[60px_3fr_90px_180px_150px] items-center gap-4 border-b p-4 text-sm"
 >
                 <span className="font-semibold text-slate-500">
   {index + 1}
@@ -368,7 +370,8 @@ return (
                 {item.status === "ongoing" ? (
   <Link
   href={`/ujian/${item.packageId}`}
-  className="font-semibold text-[#061B3A] hover:text-emerald-600 transition"
+  className="block max-w-[220px] truncate font-semibold text-[#061B3A] hover:text-emerald-600 transition"
+  title={item.title}
 >
   {item.title}
 </Link>
@@ -412,7 +415,6 @@ return (
 )}
 </div> {/* wrapper history */}
 
-</div> {/* KOLOM KANAN */}
 
 </div> {/* GRID */}
 

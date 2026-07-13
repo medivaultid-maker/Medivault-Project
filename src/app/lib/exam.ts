@@ -104,7 +104,8 @@ export async function getActiveSession(
 export async function createSession(
   userId: string,
   packageId: string,
-  attemptId: string
+  attemptId: string,
+  duration: number
 ) {
   return await supabase
     .from("exam_sessions")
@@ -112,6 +113,7 @@ export async function createSession(
       user_id: userId,
       package_id: packageId,
       attempt_id: attemptId,
+      duration,
       finished: false,
     });
 }
@@ -180,11 +182,12 @@ export async function startExam(
     attempt.id
   );
 
-  await createSession(
-    user.id,
-    item.id,
-    attempt.id
-  );
+ await createSession(
+  user.id,
+  item.id,
+  attempt.id,
+  item.duration
+);
 
   await updateUserToken(
     user.id,

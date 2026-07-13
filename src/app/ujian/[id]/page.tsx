@@ -209,6 +209,8 @@ setSelectedPackage(parsedPackage);
 setCurrent(savedCurrent ? Number(savedCurrent) : 0);
 setAnswers(initialAnswers);
 setDoubt(initialDoubt);
+console.log("SESSION =", session);
+console.log("PACKAGE DURATION =", packageData.duration);
 const startedAt = new Date(session.started_at).getTime();
 
 const endTime =
@@ -218,6 +220,9 @@ const remaining = Math.max(
   0,
   Math.floor((endTime - Date.now()) / 1000)
 );
+console.log("START =", startedAt);
+console.log("END =", endTime);
+console.log("REMAIN =", remaining);
 if (remaining <= 0) {
   submitExam();
   return;
@@ -471,17 +476,17 @@ window.location.href = `/hasil/${currentAttemptId}`;
     <main className="min-h-screen bg-[#f8fbff]">
       <Navbar />
 
-      <section className="px-6 py-8 md:px-10">
+      <section className="px-4 py-4 md:px-10 md:py-8">
         {!submitted ? (
           <div className="mx-auto max-w-7xl">
-            <div className="mb-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="mb-4 rounded-3xl border border-slate-100 bg-white p-4 md:p-6 shadow-sm">
               <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                 <div>
                   <p className="mb-2 font-extrabold text-emerald-600">
                     Latihan CBT
                   </p>
 
-                  <h1 className="text-3xl font-extrabold text-[#061B3A]">
+                 <h1 className="text-xl md:text-3xl font-extrabold text-[#061B3A] leading-tight">
                     {selectedPackage.title}
                   </h1>
 
@@ -489,9 +494,10 @@ window.location.href = `/hasil/${currentAttemptId}`;
                   </p>
                 </div>
 
-                <div className="w-fit rounded-2xl bg-[#061B3A] px-6 py-4 text-center text-white">
+                <div className="w-full md:w-fit rounded-2xl bg-[#061B3A] px-3 py-2 md:px-4 md:py-3 text-center text-white">
                   <p className="text-xs opacity-80">Sisa Waktu</p>
-                  <p className="text-3xl font-extrabold">
+                  <p className="text-xl md:text-3xl font-extrabold">
+
                     {formatTime(timeLeft)}
                   </p>
                 </div>
@@ -499,16 +505,16 @@ window.location.href = `/hasil/${currentAttemptId}`;
             </div>
 
             
-                  <div className="flex flex-col-reverse md:flex-row gap-6">
+                  <div className="flex flex-col gap-6 lg:flex-row">
   {/* Soal & Pilihan */}
   <div className="flex-1">
-    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-slate-100 bg-white p-4 md:p-6 shadow-sm">
       <div className="mb-4 flex justify-between text-sm font-bold text-slate-500">
         <span>Soal {current + 1}</span>
         <span>dari {selectedPackage?.questions.length ?? 0} soal</span>
       </div>
 
-     <h2 className="mb-5 whitespace-pre-wrap text-xl leading-relaxed text-[#061B3A]">
+     <h2 className="mb-4 whitespace-pre-wrap text-base md:text-xl leading-7 md:leading-relaxed text-[#061B3A]">
   {question.question}
 </h2>
 
@@ -517,33 +523,33 @@ window.location.href = `/hasil/${currentAttemptId}`;
           <button
             key={index}
             onClick={() => chooseAnswer(index)}
-            className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${
+            className={`flex w-full items-center gap-3 rounded-2xl border p-3 md:p-4 text-left transition ${
               answers[current] === index
                 ? "border-emerald-400 bg-emerald-50 font-bold text-emerald-700"
                 : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300"
             }`}
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-extrabold text-[#061B3A]">
+            <span className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-extrabold text-[#061B3A]">
               {String.fromCharCode(65 + index)}
             </span>
-            <span>{option}</span>
+            <span className="text-sm md:text-base">{option}</span>
           </button>
         ))}
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button onClick={goBack} className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-extrabold text-[#061B3A]">
+      <div className="mt-5 grid grid-cols-3 gap-2 md:flex md:flex-wrap">
+        <button onClick={goBack} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 md:px-5 md:py-3 font-extrabold text-[#061B3A]">
           Back
         </button>
 
         <button
           onClick={toggleDoubt}
-          className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-3 font-extrabold text-amber-700"
+          className="rounded-2xl border border-amber-300 bg-amber-50 px-3 py-2 md:px-5 md:py-3 font-extrabold text-amber-700"
         >
           {doubt[current] ? "Batal Ragu-ragu" : "Ragu-ragu"}
         </button>
 
-        <button onClick={goNext} className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-extrabold text-[#061B3A]">
+        <button onClick={goNext} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 md:px-5 md:py-3 font-extrabold text-[#061B3A]">
           Next
         </button>
       </div>
@@ -552,14 +558,14 @@ window.location.href = `/hasil/${currentAttemptId}`;
 
   {/* Sidebar Nomor Soal */}
   {/* Sidebar Nomor Soal */}
-<aside className="w-full md:w-56 flex-shrink-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm md:h-[80vh] flex flex-col">
+<aside className="w-full lg:w-64 flex-shrink-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm lg:h-[80vh] flex flex-col">
   <h3 className="mb-4 text-lg font-extrabold text-[#061B3A]">
     Nomor Soal
   </h3>
 
   {/* Scroll Area */}
   <div className="flex-1 overflow-y-auto pr-2">
-    <div className="grid grid-cols-5 gap-3">
+    <div className="grid grid-cols-6 md:grid-cols-5 gap-2">
       {questions.map((_, index) => {
         const answered = answers[index] !== null;
         const isDoubt = doubt[index];
@@ -569,7 +575,7 @@ window.location.href = `/hasil/${currentAttemptId}`;
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-10 rounded-lg border text-sm font-extrabold transition ${
+            className={`h-9 md:h-10 rounded-lg border text-sm font-extrabold transition ${
               active
                 ? "border-[#061B3A] bg-[#061B3A] text-white"
                 : isDoubt
@@ -586,7 +592,7 @@ window.location.href = `/hasil/${currentAttemptId}`;
     </div>
   </div>
 
-  <div className="mt-5 space-y-2 text-sm font-semibold text-slate-500">
+  <div className="mt-4 text-xs md:text-sm space-y-2 text-sm font-semibold text-slate-500">
     <div className="flex items-center gap-2">
       <span className="h-3 w-3 rounded bg-emerald-500" />
       Dijawab
@@ -603,7 +609,7 @@ window.location.href = `/hasil/${currentAttemptId}`;
 
   <button
   onClick={confirmSubmit}
-    className="mt-5 w-full rounded-2xl bg-emerald-500 px-5 py-3 font-extrabold text-white"
+    className="mt-4 w-full rounded-2xl bg-emerald-500 px-4 py-2.5 md:px-5 md:py-3 font-extrabold text-white"
   >
     Submit Ujian
   </button>

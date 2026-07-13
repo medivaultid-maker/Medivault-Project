@@ -163,14 +163,14 @@ export default function DashboardPage() {
           </div>
 
           {/* STATS */}
-          <div className="mb-10 grid grid-cols-2 gap-4">
+          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
 
             <div className="rounded-3xl border border-white/40 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(6,27,58,0.06)] backdrop-blur-xl p-6 shadow-lg">
               <p className="text-sm font-semibold text-slate-500">
                 Jumlah Akses
               </p>
 
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-3xl font-extrabold text-[#061B3A]">
                   {token}
                 </h2>
