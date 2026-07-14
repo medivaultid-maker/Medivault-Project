@@ -113,7 +113,7 @@ useEffect(() => {
           : "border-white/60 bg-white/60"
       }`}
     >
-      <div className="mx-auto flex min-h-[78px] max-w-7xl items-center justify-between gap-5 px-6 md:px-10">
+      <div className="mx-auto flex min-h-[72px] max-w-7xl items-center justify-between gap-5 px-6 md:px-10">
         {/* BRAND */}
         <Link
           href={role === "admin" ? "/admin" : "/"}

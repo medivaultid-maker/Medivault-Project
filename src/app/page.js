@@ -131,7 +131,7 @@ export default function Home() {
       <Navbar />
 
       {/* HERO */}
-      <section className="relative overflow-hidden px-6 pt-28 pb-20 md:px-12 md:pt-36 md:pb-28">
+      <section className="relative overflow-hidden px-6 pt-8 pb-20 md:px-12 md:pt-12 md:pb-24">
         <motion.div
           style={{ y: yBg1 }}
           className="pointer-events-none absolute -top-28 -left-28 h-80 w-80 rounded-full bg-[#234F42]/10 blur-3xl"
