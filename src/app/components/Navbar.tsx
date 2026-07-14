@@ -82,7 +82,7 @@ useEffect(() => {
     { label: "Beranda", href: "/" },
     { label: "Fitur", href: "/#fitur" },
     { label: "Simulasi", href: "/simulasi" },
-    { label: "Token", href: "/token" },
+    { label: "Akses Latihan", href: "/token" },
   ];
 
   const adminLinks: NavItem[] = [
