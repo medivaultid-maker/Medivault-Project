@@ -76,6 +76,7 @@ console.log("URL =", window.location.pathname);
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [token, setToken] = useState(0);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
@@ -552,7 +553,17 @@ window.location.href = `/hasil/${currentAttemptId}`;
   <img
     src={question.image}
     alt="Soal"
-    className="mb-6 w-full max-w-xl rounded-xl border mx-auto"
+    onClick={() => setZoomImage(question.image!)}
+    className="
+      mb-6
+      mx-auto
+      max-h-[400px]
+      max-w-[500px]
+      cursor-zoom-in
+      rounded-xl
+      border
+      object-contain
+    "
   />
 )}
 
@@ -689,6 +700,34 @@ window.location.href = `/hasil/${currentAttemptId}`;
           </div>
         )}
       </section>
+      {zoomImage && (
+  <div
+    onClick={() => setZoomImage(null)}
+    className="
+      fixed
+      inset-0
+      z-50
+      flex
+      items-center
+      justify-center
+      bg-black/70
+      p-4
+    "
+  >
+    <img
+      src={zoomImage}
+      alt="Zoom"
+      onClick={(e) => e.stopPropagation()}
+      className="
+        max-h-[90vh]
+        max-w-[90vw]
+        rounded-2xl
+        object-contain
+        shadow-xl
+      "
+    />
+  </div>
+)}
     </main>
   );
 }
