@@ -8,11 +8,18 @@ import { useParams, useSearchParams } from "next/navigation";
 type QuestionItem = {
   id: string;
   question: string;
-  image?: string;
-  options: string[];
-  answer: number;
+
+  image?: string | null;
+
+  options?: string[] | null;
+
+  answer?: number | null;
+
+  essayAnswer?: string | null;
+
   discussion: string;
-  discussionImage?: string;
+
+  discussionImage?: string | null;
 };
 
 type ExamPackage = {
@@ -61,7 +68,10 @@ console.log("URL =", window.location.pathname);
   const [selectedPackage, setSelectedPackage] = useState<ExamPackage | null>(null);
 
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>([]);
+  const [answers, setAnswers] =
+  useState<(number | null)[]>([]);
+  const [essayAnswers, setEssayAnswers] =
+  useState<string[]>([]);
   const [doubt, setDoubt] = useState<boolean[]>([]);
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -69,6 +79,7 @@ console.log("URL =", window.location.pathname);
 
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
+const isEssay = question?.essayAnswer !== null;
 
   useEffect(() => {
   const loadExam = async () => {
@@ -173,12 +184,20 @@ const parsedPackage: ExamPackage = {
   pdfName: "",
   status: "published",
  questions: questions.map((q: any) => ({
+  
   id: q.id,
   question: q.question,
+
   image: q.image,
+
   options: q.options,
+
   answer: q.answer,
+
+  essayAnswer: q.essay_answer,
+
   discussion: q.discussion,
+
   discussionImage: q.discussion_image,
 })),
 };
@@ -285,9 +304,13 @@ useEffect(() => {
   }, [checkingAccess, submitted, selectedPackage, answers]);
 
   const score = answers.reduce((total, answer, index) => {
-  return answer === selectedPackage?.questions[index]?.answer
-    ? total + 1
-    : total;
+  const q = selectedPackage?.questions[index];
+
+  if (!q) return total;
+
+  if (q.essayAnswer) return total;
+
+  return answer === q.answer ? total + 1 : total;
 }, 0);
 
   const formatTime = (seconds: number) => {
@@ -419,9 +442,17 @@ if (attemptError) {
 
 const answerRows = selectedPackage.questions.map((question: any, index) => ({
   attempt_id: currentAttemptId,
+
   question_id: question.id,
-  selected_answer: answers[index],
-  is_correct: answers[index] === question.answer,
+
+  selected_answer: question.essayAnswer
+  ? essayAnswers[index]
+  : answers[index],
+
+  is_correct: question.essayAnswer
+    ? null
+    : answers[index] === question.answer,
+
   is_doubt: doubt[index],
 }));
 
@@ -517,25 +548,42 @@ window.location.href = `/hasil/${currentAttemptId}`;
      <h2 className="mb-4 whitespace-pre-wrap text-base md:text-xl leading-7 md:leading-relaxed text-[#061B3A]">
   {question.question}
 </h2>
+{question.image && (
+  <img
+    src={question.image}
+    alt="Soal"
+    className="mb-6 w-full max-w-xl rounded-xl border mx-auto"
+  />
+)}
 
-      <div className="space-y-3">
-        {question.options.map((option, index) => (
-          <button
-            key={index}
-            onClick={() => chooseAnswer(index)}
-            className={`flex w-full items-center gap-3 rounded-2xl border p-3 md:p-4 text-left transition ${
-              answers[current] === index
-                ? "border-emerald-400 bg-emerald-50 font-bold text-emerald-700"
-                : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300"
-            }`}
-          >
-            <span className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-extrabold text-[#061B3A]">
-              {String.fromCharCode(65 + index)}
-            </span>
-            <span className="text-sm md:text-base">{option}</span>
-          </button>
-        ))}
-      </div>
+      {!isEssay ? (
+  <div className="space-y-3">
+    {question.options?.map((option, index) => (
+      <button
+        key={index}
+        onClick={() => chooseAnswer(index)}
+        className={`w-full rounded-2xl border p-4 text-left font-bold transition ${
+          answers[current] === index
+            ? "border-[#061B3A] bg-[#061B3A] text-white"
+            : "border-slate-200 bg-white text-[#061B3A]"
+        }`}
+      >
+        {String.fromCharCode(65 + index)}. {option}
+      </button>
+    ))}
+  </div>
+) : (
+  <textarea
+  value={essayAnswers[current] || ""}
+  onChange={(e) => {
+    const copy = [...essayAnswers];
+    copy[current] = e.target.value;
+    setEssayAnswers(copy);
+  }}
+    placeholder="Ketik jawaban Anda..."
+    className="min-h-[150px] w-full rounded-2xl border border-slate-300 p-4"
+  />
+)}
 
       <div className="mt-5 grid grid-cols-3 gap-2 md:flex md:flex-wrap">
         <button onClick={goBack} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 md:px-5 md:py-3 font-extrabold text-[#061B3A]">
