@@ -13,6 +13,8 @@ const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [loading, setLoading] = useState(true);
   const [exam, setExam] = useState<any>(null);
 const [questions, setQuestions] = useState<any[]>([]);
+const isPraktikum =
+  exam?.category?.includes("praktikum") ?? false;
 
  useEffect(() => {
   if (id) {
@@ -106,14 +108,36 @@ const [questions, setQuestions] = useState<any[]>([]);
             <p className="font-semibold text-slate-700">
               {index + 1}. {q.question}
             </p>
+{q.image && (
+  <img
+    src={q.image}
+    alt={`Soal ${index + 1}`}
+    className="mt-4 max-h-80 rounded-xl border object-contain"
+  />
+)}
 
-            <div className="mt-4 space-y-2">
-              {q.options?.map((opt: string, i: number) => (
-                <div key={i} className="rounded-lg border px-4 py-2">
-                  {opt}
-                </div>
-              ))}
-            </div>
+            {exam.category?.includes("praktikum") ? (
+  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+    <p className="font-bold text-emerald-700">
+      Jawaban Praktikum
+    </p>
+
+    <p className="mt-2 whitespace-pre-line text-slate-700">
+      {q.essay_answer || "-"}
+    </p>
+  </div>
+) : (
+  <div className="mt-4 space-y-2">
+    {q.options?.map((opt: string, i: number) => (
+      <div
+        key={i}
+        className="rounded-lg border px-4 py-2"
+      >
+        {String.fromCharCode(65 + i)}. {opt}
+      </div>
+    ))}
+  </div>
+)}
           </div>
         ))}
       </div>

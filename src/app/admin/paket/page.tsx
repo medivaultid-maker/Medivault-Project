@@ -368,7 +368,9 @@ if (soalError) {
   return;
 }
 
-  alert("Paket & soal berhasil disimpan!");
+alert("Paket & soal berhasil disimpan!");
+
+window.location.href = "/admin";
 };
 
   if (previewMode) {
@@ -610,6 +612,16 @@ if (soalError) {
                   value={tokenCost}
                   onChange={(e) => setTokenCost(Number(e.target.value))}
                 />
+                <input
+  type="number"
+  className={inputClass}
+  placeholder="Jumlah token"
+  value={tokenCost}
+  onChange={(e) => {
+    console.log("INPUT TOKEN:", e.target.value);
+    setTokenCost(Number(e.target.value));
+  }}
+/>
                 <p className="mt-2 text-xs leading-5 text-slate-500">
                   Jumlah token yang dibutuhkan user untuk membuka paket ujian
                   ini.
@@ -868,6 +880,14 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
             </div>
           ))}
 
+<div className="flex justify-center">
+  <button
+    onClick={addQuestion}
+    className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-[#061B3A] shadow-sm transition hover:bg-slate-50"
+  >
+    + Tambah Soal Berikutnya
+  </button>
+</div>
           <button onClick={publishPackage} className={`w-full ${emeraldButton}`}>
             Publish Paket
           </button>

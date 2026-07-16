@@ -35,18 +35,52 @@ async function checkAdmin() {
   loadPayments();
 }
   async function loadPayments() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("payment_requests")
     .select("*")
-    .eq("status", "pending")
     .order("created_at", { ascending: false });
 
-  if (data) {
-    setPayments(data);
-  }
-}
 
+  console.log("PAYMENT:", data);
+  console.log("ERROR:", error);
+
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+
+  if (!data) return;
+
+
+  const userIds = data.map((item) => item.user_id);
+
+
+  const { data: profiles, error: profileError } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", "523c6306-ccb3-454b-a5f5-ac68ef4db14f");
+
+console.log("CEK PROFILE:", profiles);
+console.log("PROFILE ERROR:", profileError);
+
+
+  const merged = data.map((payment) => ({
+    ...payment,
+    profiles: profiles?.find(
+      (profile) => profile.id === payment.user_id
+    ),
+  }));
+
+
+  console.log("FINAL DATA:", JSON.stringify(merged, null, 2));
+
+
+  setPayments(merged);
+}
 async function approve(payment: any) {
+
   const { error } = await supabase.rpc("approve_payment", {
     payment_id: payment.id,
   });
@@ -83,6 +117,12 @@ async function approve(payment: any) {
               <h2 className="font-bold text-xl">
                 {item.package_name}
               </h2>
+              <p className="mt-2">
+  Nama User :{" "}
+  <span className="font-semibold">
+    {item.profiles?.full_name || "-"}
+  </span>
+</p>
 
               <p>Nominal : Rp {item.amount.toLocaleString()}</p>
 
@@ -90,23 +130,22 @@ async function approve(payment: any) {
 
               <p>Status : {item.status}</p>
 
-              <button
-                onClick={() => {
-  if (
-    confirm(
-      "Yakin ingin memverifikasi pembayaran ini?"
-    )
-  ) {
-    approve(item);
-  }
-}}
-                className="mt-5 px-5 py-3 rounded-lg bg-green-600 text-white"
-              >
-                Verifikasi
-              </button>
-            </div>
-          ))
-        )}
+{item.status === "pending" && (
+  <button
+    onClick={() => {
+      if (confirm("Yakin ingin memverifikasi pembayaran ini?")) {
+        approve(item);
+      }
+    }}
+    className="mt-5 px-5 py-3 rounded-lg bg-green-600 text-white"
+  >
+    Verifikasi
+  </button>
+)}
+                </div>
+        ))
+      )}
+
       </div>
     </main>
   );

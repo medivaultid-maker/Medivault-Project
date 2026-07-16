@@ -24,6 +24,7 @@ type NavItem = {
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState<UserRole>(null);
+  const [loadingRole, setLoadingRole] = useState(true);
   const [email, setEmail] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
@@ -45,9 +46,11 @@ useEffect(() => {
     .single();
 
   setRole(profile?.role || "user");
+setLoadingRole(false);
 } else {
   setIsLoggedIn(false);
   setRole(null);
+setLoadingRole(false);
 }
   };
 
@@ -102,6 +105,9 @@ useEffect(() => {
       ]
     : publicLinks;
 
+    if (loadingRole) {
+  return null;
+}
   return (
     <motion.header
       initial={{ y: -60, opacity: 0 }}

@@ -87,13 +87,13 @@ const id = params.id as string;
 
   const [questions, setQuestions] = useState<QuestionItem[]>([
   {
-    id: crypto.randomUUID(),// sementara kosong
-    question: "",
-    options: isPraktikum ? undefined : ["", "", "", "", ""],
-    answer: isPraktikum ? undefined : 0,
-    essayAnswer: "",
-    discussion: "",
-  },
+ id: crypto.randomUUID(),
+ question: "",
+ options: [],
+ answer: undefined,
+ essayAnswer: "",
+ discussion: "",
+},
 ]);
 
   const inputClass =
@@ -449,14 +449,23 @@ const handleDragEnd = (event: any) => {
     }
 
     // hapus soal lama
-    await supabase
-      .from("questions")
-      .delete()
-      .eq("package_id", id);
+    const { error: deleteError } = await supabase
+  .from("questions")
+  .delete()
+  .eq("package_id", id);
+
+
+if (deleteError) {
+  console.error(deleteError);
+  alert("Gagal menghapus soal lama");
+  return;
+}
 
     // insert soal baru
-    await supabase.from("questions").insert(
-  questions.map((q, index) => ({
+const { error: insertQuestionError } = await supabase
+  .from("questions")
+  .insert(
+    questions.map((q, index) => ({
       package_id: id,
       question: q.question,
       image: q.image || null,
@@ -465,13 +474,21 @@ const handleDragEnd = (event: any) => {
       essay_answer: q.essayAnswer || null,
       discussion: q.discussion || "",
       discussion_image: q.discussionImage || null,
-order_no: index + 1,
+      order_no: index + 1,
     }))
   );
 
-    alert("Paket berhasil diupdate!");
-    router.push("/admin");
-    return;
+if (insertQuestionError) {
+  console.error(insertQuestionError);
+  alert("Soal gagal diperbarui");
+  return;
+}
+
+alert("Paket berhasil diupdate!");
+
+router.push("/admin/daftar-paket");
+router.refresh();
+return;
   }
 
   // MODE TAMBAH BARU
@@ -806,7 +823,8 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row">
+          <div className="sticky top-20 z-30 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row">
+
   <button
     onClick={() => setPreviewMode(true)}
     className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
@@ -820,6 +838,15 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   >
     + Tambah Soal
   </button>
+
+
+  <button
+    onClick={publishPackage}
+    className={`rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition ${emeraldButton}`}
+  >
+    {id ? "Update Paket" : "Publish Paket"}
+  </button>
+
 </div>
 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
   <p className="mb-4 font-bold text-[#061B3A]">

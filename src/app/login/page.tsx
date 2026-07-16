@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import { supabase } from "../lib/supabase";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -51,10 +53,10 @@ export default function LoginPage() {
 
 if (profile?.role === "admin") {
   alert("Login Admin Berhasil");
-  window.location.href = "/admin";
+  router.push("/admin");
 } else {
   alert("Login Berhasil");
-  window.location.href = "/dashboard";
+  router.push("/dashboard");
 }
 };
 
