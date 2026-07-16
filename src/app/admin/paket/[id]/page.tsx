@@ -7,15 +7,18 @@ import Navbar from "../../../components/Navbar";
 import {
   DndContext,
   closestCenter,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 
 import {
   SortableContext,
-  verticalListSortingStrategy,
+  rectSortingStrategy,
   arrayMove,
   useSortable,
 } from "@dnd-kit/sortable";
-
 import { CSS } from "@dnd-kit/utilities";
 
 type QuestionItem = {
@@ -36,12 +39,12 @@ const categories = [
   { label: "Praktikum Histologi", value: "histologi-praktikum" },
 ];
 
-function SortableQuestion({
+function SortableJump({
   id,
-  children,
+  number,
 }: {
   id: string;
-  children: React.ReactNode;
+  number: number;
 }) {
   const {
     attributes,
@@ -52,26 +55,34 @@ function SortableQuestion({
   } = useSortable({ id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  transform: CSS.Transform.toString(transform),
+  transition:
+    transition ||
+    "transform 200ms cubic-bezier(0.2,0,0,1)",
+};
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <div
-        {...attributes}
-        {...listeners}
-        className="mb-3 cursor-grab rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 active:cursor-grabbing"
-      >
-        ☰ Drag untuk mengubah urutan soal
-      </div>
-
-      {children}
-    </div>
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => {
+        document
+          .getElementById(`soal-${number}`)
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      }}
+      className="flex h-10 w-10 cursor-grab items-center justify-center rounded-lg border bg-slate-50 hover:bg-[#061B3A] hover:text-white active:cursor-grabbing"
+    >
+      {number}
+    </button>
   );
 }
 export default function AdminPaketPage() {
-  const [importText, setImportText] = useState("");
+
   const [previewMode, setPreviewMode] = useState(false);
 
   const [title, setTitle] = useState("");
@@ -79,6 +90,15 @@ export default function AdminPaketPage() {
   const isPraktikum = category.includes("praktikum");
   const [duration, setDuration] = useState(60);
   const [tokenCost, setTokenCost] = useState(1);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 5,
+    },
+  })
+);
+
 
   const params = useParams();
 const router = useRouter();
@@ -176,160 +196,6 @@ useEffect(() => {
 }, [id]);
 
   const optionLabels = ["A", "B", "C", "D", "E"];
-
-  const normalizeImportText = (text: string) => {
-    return text
-      .replace(/\r/g, "\n")
-      .replace(/\u00A0/g, " ")
-      .replace(/[“”]/g, '"')
-      .replace(/[‘’]/g, "'")
-      .replace(/[–—]/g, "-")
-      .replace(/[ \t]+/g, " ")
-      .replace(/\s+(?=[A-Ea-e]\s*[\.\)]\s+)/g, "\n")
-      .replace(/\s+(?=(?:Kunci\s*)?Jawaban\s*[:=\-])/gi, "\n")
-      .replace(
-        /\s+(?=(?:Pembahasan|Bahasan|Penjelasan|Discussion|Rationale)\s*[:=\-]?)/gi,
-        "\n"
-      )
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-  };
-
-  const getAnswerIndex = (label: string) => {
-    const idx = optionLabels.indexOf(label.toUpperCase());
-    return idx >= 0 ? idx : 0;
-  };
-
-  const hasEnoughOptions = (block: string) => {
-    const matches = block.match(/(?:^|\n)\s*[A-E]\s*[\.\)]\s+/gi);
-    return (matches ?? []).length >= 3;
-  };
-
-  const splitQuestionBlocks = (text: string) => {
-    const marked = ("\n" + text).replace(
-      /\n\s*(\d{1,3})\s*[\.\)]\s+/g,
-      "\n@@Q@@$1. "
-    );
-
-    const segments = marked
-      .split("@@Q@@")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    const blocks: string[] = [];
-    let current = "";
-
-    for (const segment of segments) {
-      if (!current) {
-        current = segment;
-        continue;
-      }
-
-      if (hasEnoughOptions(current)) {
-        blocks.push(current.trim());
-        current = segment;
-      } else {
-        current += "\n" + segment;
-      }
-    }
-
-    if (current.trim()) blocks.push(current.trim());
-
-    return blocks;
-  };
-
-  const parseSingleQuestionBlock = (block: string): QuestionItem => {
-    const lines = block
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
-
-    const questionLines: string[] = [];
-    const discussionLines: string[] = [];
-    const optionMap = ["", "", "", "", ""];
-
-    let currentOption: number | null = null;
-    let answerIndex = 0;
-    let isDiscussion = false;
-
-    lines.forEach((rawLine, index) => {
-      let line = rawLine.trim();
-
-      if (index === 0) {
-        line = line.replace(/^\d{1,3}\s*[\.\)]\s*/, "").trim();
-      }
-
-      const answerMatch = line.match(
-        /^(?:kunci\s*)?(?:jawaban|answer|ans)\s*[:=\-]?\s*([A-E])/i
-      );
-
-      if (answerMatch) {
-        answerIndex = getAnswerIndex(answerMatch[1]);
-        currentOption = null;
-        return;
-      }
-
-      const discussionMatch = line.match(
-        /^(?:pembahasan|bahasan|penjelasan|discussion|rationale)\s*[:=\-]?\s*(.*)$/i
-      );
-
-      if (discussionMatch) {
-        isDiscussion = true;
-        currentOption = null;
-
-        const discussionText = discussionMatch[1]?.trim();
-        if (discussionText) discussionLines.push(discussionText);
-
-        return;
-      }
-
-      if (isDiscussion) {
-        discussionLines.push(line);
-        return;
-      }
-
-      const optionMatch = line.match(/^([A-E])\s*[\.\)]\s*(.*)$/i);
-
-      if (optionMatch) {
-        const optionIndex = getAnswerIndex(optionMatch[1]);
-        optionMap[optionIndex] = optionMatch[2]?.trim() || "";
-        currentOption = optionIndex;
-        return;
-      }
-
-      if (currentOption !== null && optionMap[currentOption]) {
-        optionMap[currentOption] += " " + line;
-        return;
-      }
-
-      questionLines.push(line);
-    });
-
-    return {
-  id: crypto.randomUUID(),
-  question: questionLines.join("\n").trim(),
-  options: optionMap,
-  answer: answerIndex,
-  discussion: discussionLines.join("\n").trim(),
-};
-  };
-
-  const parseQuestionsFromText = () => {
-    if (!importText.trim()) return alert("Paste soal dulu!");
-
-    const cleanText = normalizeImportText(importText);
-    const blocks = splitQuestionBlocks(cleanText);
-
-    const parsed = blocks
-      .map(parseSingleQuestionBlock)
-      .filter((q) => q.question || q.options.some((opt) => opt.trim()));
-
-    if (!parsed.length) {
-      return alert("Format soal belum terbaca. Cek lagi format copas PDF-nya.");
-    }
-
-    setQuestions(parsed);
-  };
 
   const updateQuestion = (i: number, val: string) => {
     const copy = [...questions];
@@ -686,9 +552,8 @@ order_no: index + 1,
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Buat paket ujian CBT & praktikum, import soal dari PDF, atur kunci jawaban, dan
-            tambahkan pembahasan sebelum dipublikasikan.
-          </p>
+  Buat dan kelola paket ujian CBT maupun praktikum, tambahkan soal, atur kunci jawaban, serta pembahasan sebelum dipublikasikan.
+</p>
         </div>
       </section>
 
@@ -778,51 +643,6 @@ order_no: index + 1,
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex flex-col justify-between gap-4 border-b border-slate-100 pb-4 md:flex-row md:items-center">
-              <div>
-                <h2 className="font-poppins text-xl font-bold text-[#061B3A]">
-                  Import Soal dari PDF
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-slate-500">
-                  Support opsi A-E, tipe kombinasi angka, kunci jawaban, dan
-                  pembahasan otomatis dari teks.
-                </p>
-              </div>
-
-              <button onClick={parseQuestionsFromText} className={primaryButton}>
-                Generate Soal
-              </button>
-            </div>
-
-            <textarea
-              className={`${textareaClass} h-72`}
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              placeholder={`Format disarankan:
-
-1. Pernyataan yang benar tentang anatomi jantung adalah...
-1) Atrium kanan menerima darah vena
-2) Ventrikel kiri memompa darah ke aorta
-3) Katup trikuspid berada di sisi kanan
-4) Vena pulmonalis membawa darah miskin oksigen
-
-A. 1, 2, dan 3
-B. 1 dan 3
-C. 2 dan 4
-D. 4 saja
-E. Semua benar
-
-Jawaban: A
-Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jantung.`}
-            />
-
-            <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-              Gunakan label <b>Jawaban:</b> untuk kunci dan{" "}
-              <b>Pembahasan:</b> untuk isi pembahasan.
-            </div>
-          </div>
-
           <div className="sticky top-20 z-30 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row">
 
   <button
@@ -848,30 +668,45 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   </button>
 
 </div>
-<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-  <p className="mb-4 font-bold text-[#061B3A]">
-    Lompat ke Soal
-  </p>
 
-  <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto">
-    {questions.map((_, index) => (
-      <button
-        key={index}
-        onClick={() => {
-          document
-            .getElementById(`soal-${index + 1}`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-        }}
-        className="h-10 w-10 rounded-lg border bg-slate-50 hover:bg-[#061B3A] hover:text-white"
-      >
-        {index + 1}
-      </button>
-    ))}
-  </div>
+ <DndContext
+  sensors={sensors}
+  collisionDetection={closestCenter}
+  onDragStart={({ active }) => {
+    setActiveId(active.id as string);
+  }}
+  onDragEnd={(event) => {
+    setActiveId(null);
+    handleDragEnd(event);
+  }}
+  onDragCancel={() => {
+    setActiveId(null);
+  }}
+>
+  <SortableContext
+  items={questions.map((q) => q.id)}
+  strategy={rectSortingStrategy}
+>
+  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+  <p className="font-bold text-[#061B3A]">
+  Lompat ke Soal
+</p>
+
+<p className="mb-4 text-sm text-slate-500">
+  Geser nomor soal untuk mengubah urutan.
+</p>
+
+    <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto">
+      {questions.map((q, index) => (
+        <SortableJump
+          key={q.id}
+          id={q.id}
+          number={index + 1}
+        />
+      ))}
+    </div>
 </div>
+
 <div className="rounded-2xl bg-[#061B3A] p-5 text-white">
   <p className="text-sm opacity-80">
     Total Soal
@@ -882,43 +717,32 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   </h2>
 </div>
 
-<DndContext
-  collisionDetection={closestCenter}
-  onDragEnd={handleDragEnd}
->
-  <SortableContext
-    items={questions.map((q) => q.id)}
-    strategy={verticalListSortingStrategy}
-  >
-
           {questions.map((q, i) => (
-  <SortableQuestion
-    key={q.id}
-    id={q.id}
-  >
+  <div
+  key={q.id}
+  id={`soal-${i + 1}`}
+>
     <div
       id={`soal-${i + 1}`}
       className="rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-sm"
     >
               <div className="sticky top-0 z-20 mb-5 flex flex-col justify-between gap-3 border-b border-slate-200 bg-white pb-4 pt-2 md:flex-row md:items-center">
                 <div>
-                  <p className="text-sm font-semibold text-emerald-600">
-                    Question Editor
-                  </p>
+                  
                   <div className="flex items-center gap-3">
   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#061B3A] text-lg font-bold text-white">
     {i + 1}
   </div>
 
-  <div>
-    <p className="text-sm font-semibold text-emerald-600">
-      Question Editor
-    </p>
+ <div>
+  <h3 className="font-poppins text-xl font-bold text-[#061B3A]">
+    Soal Nomor {i + 1}
+  </h3>
 
-    <h3 className="font-poppins text-xl font-bold text-[#061B3A]">
-      Soal Nomor {i + 1}
-    </h3>
-  </div>
+  <p className="mt-1 text-sm text-slate-500">
+    Edit soal, jawaban, dan pembahasan.
+  </p>
+</div>
 </div>
                 </div>
 
@@ -930,8 +754,23 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
                 </button>
               </div>
 
+              <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
+
+<div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
+<div className="mb-6 border-b border-slate-200 pb-4">
+  <span className="text-2xl">📄</span>
+   <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+    SOAL
+  </h3>
+</div>
+
+<label className="font-semibold text-slate-700">
+  Tulis Soal
+</label>
+
               <textarea
-                className={`${textareaClass} min-h-32`}
+className={`${textareaClass} h-[260px] resize-none`}
                 placeholder="Tulis soal"
                 value={q.question}
                 onChange={(e) => updateQuestion(i, e.target.value)}
@@ -975,58 +814,42 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   />
 )}
               </div>
+              
+                   
+</div>
 
-              {!isPraktikum ? (
-  <>
-    <div className="mt-5 space-y-3">
-      {q.options?.map((opt, j) => (
-        <div key={j} className="flex gap-3">
-          <div
-            className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${
-              q.answer === j
-                ? "bg-emerald-600 text-white"
-                : "bg-slate-100 text-slate-600"
-            }`}
-          >
-            {String.fromCharCode(65 + j)}
-          </div>
+<div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
+
+<div className="mb-6 border-b border-slate-200 pb-4">
+  <span className="text-2xl">🟡</span>
+  <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+    JAWABAN
+  </h3>
+</div>
+
+  {!isPraktikum ? (
+    <>
+      {optionLabels.map((label, oi) => (
+        <div key={oi} className="mb-4">
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Pilihan {label}
+          </label>
 
           <input
             className={inputClass}
-            value={opt}
-            placeholder={`Opsi ${String.fromCharCode(65 + j)}`}
+            value={q.options?.[oi] || ""}
             onChange={(e) =>
-              updateOption(i, j, e.target.value)
+              updateOption(i, oi, e.target.value)
             }
           />
         </div>
       ))}
-    </div>
-  </>
-) : (
-  <div className="mt-5">
-    <label className="mb-2 block text-sm font-bold text-slate-700">
-      Jawaban Praktikum
-    </label>
 
-    <textarea
-      className={textareaClass}
-      placeholder="Contoh: Nervus vagus"
-      value={q.essayAnswer || ""}
-      onChange={(e) =>
-        updateEssayAnswer(i, e.target.value)
-      }
-    />
-  </div>
-)}
-
-
-              {!isPraktikum && (
-  <div className="mt-5 grid gap-4 md:grid-cols-2">
-    <div>
-      <p className="mb-2 text-sm font-bold text-slate-700">
+      <hr className="border-slate-200" />
+      
+      <label className="mb-2 mt-5 block text-sm font-semibold text-slate-700">
         Kunci Jawaban
-      </p>
+      </label>
 
       <select
         className={inputClass}
@@ -1035,25 +858,42 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
           updateAnswer(i, Number(e.target.value))
         }
       >
-        {q.options?.map((_, idx) => (
+        {optionLabels.map((l, idx) => (
           <option key={idx} value={idx}>
-            Kunci {String.fromCharCode(65 + idx)}
+            {l}
           </option>
         ))}
       </select>
-    </div>
+    </>
+  ) : (
+    <>
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Jawaban Praktikum
+      </label>
 
-    <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
-      <p className="font-bold">Jawaban aktif</p>
+      <textarea
+        className={textareaClass}
+        value={q.essayAnswer || ""}
+        onChange={(e) =>
+          updateEssayAnswer(i, e.target.value)
+        }
+      />
+    </>
+  )}
 
-      <p className="mt-1 leading-6">
-        {String.fromCharCode(
-          65 + (q.answer || 0)
-        )}
-      </p>
-    </div>
-  </div>
-)}
+</div>
+
+<div className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm space-y-5">
+<div className="mb-6 border-b border-slate-200 pb-4">
+  <span className="text-2xl">🟡</span>
+   <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+    PEMBAHASAN
+  </h3>
+</div>
+
+<h4 className="text-sm font-bold text-emerald-700">
+  Pembahasan
+</h4>
 
               <textarea
                 className="mt-5 min-h-28 w-full rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
@@ -1098,14 +938,28 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
                     className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
                   />
                 )}
+                </div>
+
+</div>
               </div>
                         </div>
-          </SortableQuestion>
+          </div>
         ))}
 
-      </SortableContext>
-    </DndContext>
-
+<DragOverlay>
+  {activeId ? (
+    <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-white shadow-xl">
+      {
+        questions.findIndex(
+          (q) => q.id === activeId
+        ) + 1
+      }
+    </div>
+  ) : null}
+</DragOverlay>
+</SortableContext>
+</DndContext>
+    
           <button onClick={publishPackage} className={`w-full ${emeraldButton}`}>
             {id ? "Update Paket" : "Publish Paket"}
           </button>

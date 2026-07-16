@@ -29,7 +29,8 @@ export async function updateUserToken(
 export async function getPackages() {
   return await supabase
     .from("exam_packages")
-    .select("*");
+    .select("*")
+    .eq("status", "published");
 }
 
 /* ==========================

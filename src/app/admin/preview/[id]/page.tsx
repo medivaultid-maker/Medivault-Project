@@ -72,31 +72,42 @@ const isPraktikum =
 
     <div className="mx-auto max-w-5xl p-8">
 
-      {/* HEADER */}
-      <div className="mb-6 rounded-2xl bg-sky-50 p-6 border border-sky-200">
+      <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+  <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
-        <p className="font-bold text-sky-700">
-          👁 MODE PREVIEW
-        </p>
+    <div>
+      <div className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-sm font-semibold text-sky-700">
+        👁 Preview Paket Ujian
+      </div>
 
-        <h1 className="mt-2 text-3xl font-bold">
-          {exam?.title}
-        </h1>
+      <h1 className="mt-4 text-4xl font-extrabold text-[#061B3A]">
+        {exam?.title}
+      </h1>
 
-        <div className="mt-2 flex flex-wrap gap-3 text-slate-500">
-          <span>{exam?.duration ?? 0} menit</span>
-          <span>•</span>
-          <span>{exam?.total_questions ?? 0} soal</span>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <div className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium">
+          ⏱ {exam?.duration} menit
         </div>
 
-        <Link
-          href="/admin/daftar-paket"
-          className="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-slate-700 font-medium hover:bg-slate-100 transition"
-        >
-          ← Kembali
-        </Link>
+        <div className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium">
+          📚 {exam?.total_questions} soal
+        </div>
 
+        <div className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium">
+          🏷 {exam?.category}
+        </div>
       </div>
+    </div>
+
+    <Link
+      href="/admin/daftar-paket"
+      className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 px-5 font-semibold text-slate-700 hover:bg-slate-50"
+    >
+      ← Kembali
+    </Link>
+
+  </div>
+</div>
 
       {/* QUESTIONS */}
       <div className="mt-8 space-y-6">
@@ -105,9 +116,9 @@ const isPraktikum =
             key={q.id}
             className="rounded-2xl border bg-white p-6 shadow-sm"
           >
-            <p className="font-semibold text-slate-700">
-              {index + 1}. {q.question}
-            </p>
+            <div className="whitespace-pre-line font-semibold text-slate-700">
+  {index + 1}. {q.question}
+</div>
 {q.image && (
   <img
     src={q.image}
@@ -133,7 +144,9 @@ const isPraktikum =
         key={i}
         className="rounded-lg border px-4 py-2"
       >
-        {String.fromCharCode(65 + i)}. {opt}
+        <div className="whitespace-pre-line">
+  {String.fromCharCode(65 + i)}. {opt}
+</div>
       </div>
     ))}
   </div>

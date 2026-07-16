@@ -271,7 +271,7 @@ return (
 
           {/* ================= CHART ================= */}
           {chartData.length > 0 && (
-            <div className="mt-6 rounded-3xl border bg-white p-6 shadow-sm">
+  <div className="rounded-3xl border bg-white p-6 shadow-sm">
 
               <h2 className="mb-6 text-2xl font-bold text-[#061B3A]">
   Riwayat Latihan

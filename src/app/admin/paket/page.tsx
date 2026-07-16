@@ -427,9 +427,9 @@ window.location.href = "/admin";
           <div className="mx-auto max-w-6xl space-y-5">
             {questions.map((q, i) => (
               <div
-                key={i}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-              >
+  key={i}
+  className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+>
                 <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
                   <div>
                     <p className="font-poppins text-lg font-bold text-[#061B3A]">
@@ -559,12 +559,7 @@ window.location.href = "/admin";
                 <label className="mb-2 block text-sm font-bold text-slate-700">
                   Nama Paket
                 </label>
-                <input
-                  className={inputClass}
-                  placeholder="Contoh: Paket Anatomi Dasar 1"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
+
               </div>
 
               <div>

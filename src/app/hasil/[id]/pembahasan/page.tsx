@@ -227,10 +227,6 @@ question.attempt_answers[0]?.is_doubt ?? false;
             <h1 className="text-4xl font-extrabold text-[#061B3A]">
               Pembahasan {result.exam_packages?.title}
             </h1>
-
-            <p className="mt-3 text-slate-600">
-              Skor {result.score}
-            </p>
           </div>
 
           <div className="mb-6 flex flex-wrap justify-center gap-3">
@@ -296,9 +292,18 @@ question.attempt_answers[0]?.is_doubt ?? false;
                     </div>
                   </div>
 
-                  <h2 className="text-xl font-normal leading-8 text-[#061B3A]">
-                    {question.question}
-                  </h2>
+                  <h2
+  className="
+    whitespace-pre-wrap
+    break-words
+    text-xl
+    font-normal
+    leading-8
+    text-[#061B3A]
+  "
+>
+  {question.question}
+</h2>
 
 {question.image && (
   <img
@@ -335,20 +340,26 @@ question.attempt_answers[0]?.is_doubt ?? false;
                     })}
                   </div>
 
-                  <div className="mt-5 rounded-2xl bg-slate-50 p-5">
-  <p className="font-bold text-[#061B3A]">Pembahasan</p>
+                  {(question.discussion?.trim() || question.discussion_image) && (
+  <div className="mt-5 rounded-2xl bg-slate-50 p-5">
+    <p className="font-bold text-[#061B3A]">
+      Pembahasan
+    </p>
 
-  <p className="mt-2 whitespace-pre-wrap break-words leading-7 text-slate-600">
-    {question.discussion}
-  </p>
+    {question.discussion?.trim() && (
+      <p className="mt-2 whitespace-pre-wrap break-words leading-7 text-slate-600">
+        {question.discussion}
+      </p>
+    )}
 
-  {question.discussion_image && (
-    <img
-      src={question.discussion_image}
-      className="mt-4 max-h-72 rounded-xl border object-contain"
-    />
-  )}
-</div>
+    {question.discussion_image && (
+      <img
+        src={question.discussion_image}
+        className="mt-4 max-h-72 rounded-xl border object-contain"
+      />
+    )}
+  </div>
+)}
                 </div>
               );
             })}

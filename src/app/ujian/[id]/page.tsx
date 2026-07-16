@@ -77,6 +77,7 @@ console.log("URL =", window.location.pathname);
   const [submitted, setSubmitted] = useState(false);
   const [token, setToken] = useState(0);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+const [resultAttemptId, setResultAttemptId] = useState("");
 
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
@@ -109,10 +110,10 @@ if (currentAttemptId) {
 
   session = data;
 
-  if (session?.finished) {
-    window.location.replace(`/hasil/${currentAttemptId}`);
-    return;
-  }
+ if (session?.finished && !submitted) {
+  window.location.replace(`/hasil/${currentAttemptId}`);
+  return;
+}
 }
 
 const { data: profile } = await supabase
@@ -140,6 +141,7 @@ const { data: packageData, error: packageError } = await supabase
   .from("exam_packages")
   .select("*")
   .eq("id", id)
+  .eq("status", "published")
   .single();
 
   console.log("PACKAGE =", packageData);
@@ -224,7 +226,26 @@ const initialDoubt =
   savedDoubt
     ? JSON.parse(savedDoubt)
     : Array(parsedPackage.questions.length).fill(false);
+// =============================
+// Ambil jawaban dari database
+// =============================
+const { data: savedAnswerRows } = await supabase
+  .from("attempt_answers")
+  .select("question_id, selected_answer, is_doubt")
+  .eq("attempt_id", currentAttemptId);
 
+if (savedAnswerRows) {
+  savedAnswerRows.forEach((row: any) => {
+    const index = parsedPackage.questions.findIndex(
+      (q) => q.id === row.question_id
+    );
+
+    if (index !== -1) {
+      initialAnswers[index] = row.selected_answer;
+      initialDoubt[index] = row.is_doubt ?? false;
+    }
+  });
+}
 setSelectedPackage(parsedPackage);
 setCurrent(savedCurrent ? Number(savedCurrent) : 0);
 setAnswers(initialAnswers);
@@ -314,7 +335,51 @@ useEffect(() => {
   return answer === q.answer ? total + 1 : total;
 }, 0);
 
-  const formatTime = (seconds: number) => {
+// =============================
+// TAMBAHKAN INI
+// =============================
+async function saveAnswer(
+  questionId: string,
+  answer: number | string
+) {
+  const currentAttemptId =
+    attemptId || localStorage.getItem("medivault_attempt_id");
+
+  if (!currentAttemptId) return;
+
+  const currentQuestion = selectedPackage?.questions.find(
+    (q) => q.id === questionId
+  );
+
+  if (!currentQuestion) return;
+
+  const { error } = await supabase
+    .from("attempt_answers")
+    .upsert(
+      {
+        attempt_id: currentAttemptId,
+        question_id: questionId,
+        selected_answer: answer,
+
+        is_correct:
+          currentQuestion.essayAnswer
+            ? null
+            : answer === currentQuestion.answer,
+
+        is_doubt: doubt[current],
+      },
+      {
+        onConflict: "attempt_id,question_id",
+      }
+    );
+
+  if (error) {
+    console.error("SAVE ANSWER ERROR", error);
+  }
+}
+// =============================
+
+const formatTime = (seconds: number) => {
     const minute = Math.floor(seconds / 60);
     const second = seconds % 60;
 
@@ -324,17 +389,35 @@ useEffect(() => {
     )}`;
   };
 
-  const chooseAnswer = (optionIndex: number) => {
-    const copy = [...answers];
-    copy[current] = optionIndex;
-    setAnswers(copy);
-  };
+  const chooseAnswer = async (optionIndex: number) => {
+  const copy = [...answers];
+  copy[current] = optionIndex;
+  setAnswers(copy);
 
-  const toggleDoubt = () => {
-    const copy = [...doubt];
-    copy[current] = !copy[current];
-    setDoubt(copy);
-  };
+  await saveAnswer(
+    selectedPackage!.questions[current].id,
+    optionIndex
+  );
+};
+
+  const toggleDoubt = async () => {
+  const copy = [...doubt];
+  copy[current] = !copy[current];
+  setDoubt(copy);
+
+  const currentAttemptId =
+    attemptId || localStorage.getItem("medivault_attempt_id");
+
+  if (!currentAttemptId) return;
+
+  await supabase
+    .from("attempt_answers")
+    .update({
+      is_doubt: copy[current],
+    })
+    .eq("attempt_id", currentAttemptId)
+    .eq("question_id", question.id);
+};
 
   const goNext = () => {
     if (current < (selectedPackage?.questions.length ?? 0) - 1) {
@@ -441,47 +524,18 @@ if (attemptError) {
   return;
 }
 
-const answerRows = selectedPackage.questions.map((question: any, index) => ({
-  attempt_id: currentAttemptId,
-
-  question_id: question.id,
-
-  selected_answer: question.essayAnswer
-  ? essayAnswers[index]
-  : answers[index],
-
-  is_correct: question.essayAnswer
-    ? null
-    : answers[index] === question.answer,
-
-  is_doubt: doubt[index],
-}));
-
-const { error: answerError } = await supabase
-  .from("attempt_answers")
-  .insert(answerRows);
-
-if (answerError) {
-  setSubmitted(false);
-  console.error(answerError);
-  alert(answerError.message);
-  return;
-}
 await supabase
   .from("exam_sessions")
   .update({
     finished: true,
   })
   .eq("attempt_id", currentAttemptId);
-
+setResultAttemptId(currentAttemptId);
   localStorage.removeItem("medivault_attempt_id");
-
 localStorage.removeItem(`exam-current-${selectedPackage.id}`);
 localStorage.removeItem(`exam-answers-${selectedPackage.id}`);
 localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
 
-
-window.location.href = `/hasil/${currentAttemptId}`;
 }
 
   if (checkingAccess || !selectedPackage || !question) {
@@ -508,10 +562,10 @@ window.location.href = `/hasil/${currentAttemptId}`;
     <main className="min-h-screen bg-[#f8fbff]">
       <Navbar />
 
-      <section className="px-4 py-4 md:px-10 md:py-8">
+      <section className="px-4 pt-2 pb-4 md:px-10 md:pt-3 md:pb-6">
         {!submitted ? (
           <div className="mx-auto max-w-7xl">
-            <div className="mb-4 rounded-3xl border border-slate-100 bg-white p-4 md:p-6 shadow-sm">
+            <div className="mb-3 rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
               <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                 <div>
                   <p className="mb-2 font-extrabold text-emerald-600">
@@ -537,14 +591,16 @@ window.location.href = `/hasil/${currentAttemptId}`;
             </div>
 
             
-                  <div className="flex flex-col gap-6 lg:flex-row">
+                  <div className="flex flex-col gap-4 lg:flex-row items-stretch">
   {/* Soal & Pilihan */}
-  <div className="flex-1">
-    <div className="rounded-3xl border border-slate-100 bg-white p-4 md:p-6 shadow-sm">
+  <div className="flex-1 flex">
+  <div className="flex flex-1 flex-col rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
       <div className="mb-4 flex justify-between text-sm font-bold text-slate-500">
         <span>Soal {current + 1}</span>
         <span>dari {selectedPackage?.questions.length ?? 0} soal</span>
       </div>
+
+<div className="flex-1 overflow-y-auto pr-2">
 
      <h2 className="mb-4 whitespace-pre-wrap text-base md:text-xl leading-7 md:leading-relaxed text-[#061B3A]">
   {question.question}
@@ -586,16 +642,24 @@ window.location.href = `/hasil/${currentAttemptId}`;
 ) : (
   <textarea
   value={essayAnswers[current] || ""}
-  onChange={(e) => {
-    const copy = [...essayAnswers];
-    copy[current] = e.target.value;
-    setEssayAnswers(copy);
-  }}
+  onChange={async (e) => {
+  const value = e.target.value;
+
+  const copy = [...essayAnswers];
+  copy[current] = value;
+  setEssayAnswers(copy);
+
+  await saveAnswer(
+    question.id,
+    value
+  );
+}}
     placeholder="Ketik jawaban Anda..."
     className="min-h-[150px] w-full rounded-2xl border border-slate-300 p-4"
   />
 )}
 
+</div>
       <div className="mt-5 grid grid-cols-3 gap-2 md:flex md:flex-wrap">
         <button onClick={goBack} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 md:px-5 md:py-3 font-extrabold text-[#061B3A]">
           Back
@@ -617,13 +681,13 @@ window.location.href = `/hasil/${currentAttemptId}`;
 
   {/* Sidebar Nomor Soal */}
   {/* Sidebar Nomor Soal */}
-<aside className="w-full lg:w-64 flex-shrink-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm lg:h-[80vh] flex flex-col">
+<aside className="w-full lg:w-64 flex flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
   <h3 className="mb-4 text-lg font-extrabold text-[#061B3A]">
     Nomor Soal
   </h3>
 
   {/* Scroll Area */}
-  <div className="flex-1 overflow-y-auto pr-2">
+  <div className="overflow-y-auto max-h-[470px] pr-2">
     <div className="grid grid-cols-6 md:grid-cols-5 gap-2">
       {questions.map((_, index) => {
         const answered = answers[index] !== null;
@@ -651,7 +715,7 @@ window.location.href = `/hasil/${currentAttemptId}`;
     </div>
   </div>
 
-  <div className="mt-4 text-xs md:text-sm space-y-2 text-sm font-semibold text-slate-500">
+  <div className="mt-3 space-y-2 text-xs md:text-sm font-semibold text-slate-500">
     <div className="flex items-center gap-2">
       <span className="h-3 w-3 rounded bg-emerald-500" />
       Dijawab
@@ -666,10 +730,10 @@ window.location.href = `/hasil/${currentAttemptId}`;
     </div>
   </div>
 
-  <button
+ <button
   onClick={confirmSubmit}
-    className="mt-4 w-full rounded-2xl bg-emerald-500 px-4 py-2.5 md:px-5 md:py-3 font-extrabold text-white"
-  >
+  className="mt-3 w-full rounded-2xl bg-emerald-500 px-4 py-2.5 md:px-5 md:py-3 font-extrabold text-white"
+>
     Submit Ujian
   </button>
 </aside>
@@ -681,22 +745,22 @@ window.location.href = `/hasil/${currentAttemptId}`;
               Ujian Selesai
             </p>
 
-            <p className="mt-6 text-xl font-extrabold text-slate-700">
-              Skor kamu: {score} / {selectedPackage?.questions.length ?? 0}
-            </p>
+            <p className="mt-6 text-5xl font-extrabold text-emerald-600">
+  {Math.round((score / (selectedPackage?.questions.length ?? 1)) * 100)}
+</p>
 
-            <p className="mt-2 font-bold text-slate-500">
-              Sisa token: {token}
-            </p>
+<p className="mt-3 text-lg font-semibold text-slate-600">
+  Skor Kamu
+</p>
 
             <button
-              onClick={() => {
-                window.location.href = "/hasil";
-              }}
-              className="mt-6 w-full rounded-2xl bg-emerald-500 px-6 py-4 font-extrabold text-white"
-            >
-              Lihat Hasil & Pembahasan
-            </button>
+  onClick={() => {
+    window.location.href = `/hasil/${resultAttemptId}`;
+  }}
+  className="mt-6 w-full rounded-2xl bg-emerald-500 px-6 py-4 font-extrabold text-white"
+>
+  Lihat Hasil & Pembahasan
+</button>
           </div>
         )}
       </section>
