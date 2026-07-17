@@ -2,6 +2,23 @@
 import { supabase } from "../../lib/supabase";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import {
+  DndContext,
+  closestCenter,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  rectSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
 
 type QuestionItem = {
   id: string;
@@ -21,6 +38,49 @@ const categories = [
   { label: "Praktikum Histologi", value: "histologi-praktikum" },
 ];
 
+function SortableJump({
+  id,
+  number,
+}: {
+  id: string;
+  number: number;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition:
+      transition ||
+      "transform 200ms cubic-bezier(0.2,0,0,1)",
+  };
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => {
+        document
+          .getElementById(`soal-${number}`)
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      }}
+      className="flex h-10 w-10 cursor-grab items-center justify-center rounded-lg border bg-slate-50 hover:bg-[#061B3A] hover:text-white active:cursor-grabbing"
+    >
+      {number}
+    </button>
+  );
+}
+
 export default function AdminPaketPage() {
   const [importText, setImportText] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
@@ -30,10 +90,19 @@ export default function AdminPaketPage() {
   const isPraktikum = category.includes("praktikum");
   const [duration, setDuration] = useState(60);
   const [tokenCost, setTokenCost] = useState(1);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 5,
+    },
+  })
+);
 
   const [questions, setQuestions] = useState<QuestionItem[]>([
   {
-    id: "", // sementara kosong
+    id: crypto.randomUUID(),
     question: "",
     options: isPraktikum ? undefined : ["", "", "", "", ""],
     answer: isPraktikum ? undefined : 0,
@@ -208,7 +277,7 @@ export default function AdminPaketPage() {
     });
 
     return {
-  id: "",
+  id: crypto.randomUUID(),
   question: questionLines.join("\n").trim(),
   options: optionMap,
   answer: answerIndex,
@@ -230,7 +299,11 @@ export default function AdminPaketPage() {
       return alert("Format soal belum terbaca. Cek lagi format copas PDF-nya.");
     }
 
-    setQuestions(parsed);
+    console.log("BLOCKS =", blocks);
+console.log("PARSED =", parsed);
+console.log("JUMLAH =", parsed.length);
+
+    setQuestions([...parsed]);
   };
 
   const updateQuestion = (i: number, val: string) => {
@@ -269,10 +342,11 @@ export default function AdminPaketPage() {
   setQuestions([
     ...questions,
     {
-      id: "",
+      id: crypto.randomUUID(),
       question: "",
-      options: ["", "", "", "", ""],
-      answer: 0,
+      options: isPraktikum ? undefined : ["", "", "", "", ""],
+      answer: isPraktikum ? undefined : 0,
+      essayAnswer: "",
       discussion: "",
     },
   ]);
@@ -282,6 +356,18 @@ export default function AdminPaketPage() {
     if (questions.length === 1) return alert("Minimal 1 soal");
     setQuestions(questions.filter((_, idx) => idx !== i));
   };
+  const handleDragEnd = (event: any) => {
+  const { active, over } = event;
+
+  if (!over || active.id === over.id) return;
+
+  setQuestions((items) => {
+    const oldIndex = items.findIndex((q) => q.id === active.id);
+    const newIndex = items.findIndex((q) => q.id === over.id);
+
+    return arrayMove(items, oldIndex, newIndex);
+  });
+};
 
   const uploadImage = (i: number, file?: File) => {
     if (!file) return;
@@ -427,7 +513,7 @@ window.location.href = "/admin";
           <div className="mx-auto max-w-6xl space-y-5">
             {questions.map((q, i) => (
               <div
-  key={i}
+  key={q.id}
   className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
 >
                 <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -555,12 +641,19 @@ window.location.href = "/admin";
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  Nama Paket
-                </label>
+             <div>
+  <label className="mb-2 block text-sm font-bold text-slate-700">
+    Nama Paket
+  </label>
 
-              </div>
+  <input
+    type="text"
+    className={inputClass}
+    placeholder="Masukkan nama paket"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+  />
+</div>
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-700">
@@ -607,16 +700,7 @@ window.location.href = "/admin";
                   value={tokenCost}
                   onChange={(e) => setTokenCost(Number(e.target.value))}
                 />
-                <input
-  type="number"
-  className={inputClass}
-  placeholder="Jumlah token"
-  value={tokenCost}
-  onChange={(e) => {
-    console.log("INPUT TOKEN:", e.target.value);
-    setTokenCost(Number(e.target.value));
-  }}
-/>
+                
                 <p className="mt-2 text-xs leading-5 text-slate-500">
                   Jumlah token yang dibutuhkan user untuk membuka paket ujian
                   ini.
@@ -691,187 +775,212 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
               key={i}
               className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
             >
-              <div className="mb-5 flex flex-col justify-between gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-center">
-                <div>
-                  <p className="text-sm font-semibold text-emerald-600">
-                    Question Editor
-                  </p>
-                  <h3 className="font-poppins text-xl font-bold text-[#061B3A]">
-                    Soal {i + 1}
-                  </h3>
-                </div>
-
-                <button
-                  onClick={() => deleteQuestion(i)}
-                  className="rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100"
-                >
-                  Hapus Soal
-                </button>
-              </div>
-
-              <textarea
-                className={`${textareaClass} min-h-32`}
-                placeholder="Tulis soal"
-                value={q.question}
-                onChange={(e) => updateQuestion(i, e.target.value)}
-              />
-
-              <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-                <label className="mb-2 block font-semibold text-[#061B3A]">
-  Gambar Soal
-</label>
-
-<input
-  type="file"
-  accept="image/*"
-  className="text-sm text-slate-500"
-  onChange={(e) => uploadImage(i, e.target.files?.[0])}
-/>
-
-<div className="mt-3">
-  <label className="mb-2 block text-sm font-medium text-slate-700">
-    Atau tempel link gambar (ImgBB)
-  </label>
-
-  <input
-    type="text"
-    placeholder="https://i.ibb.co/xxxxx/gambar.png"
-    value={q.image || ""}
-    onChange={(e) => {
-      const copy = [...questions];
-      copy[i].image = e.target.value;
-      setQuestions(copy);
-    }}
-    className={inputClass}
-  />
-</div>
-
-{q.image && (
-  <img
-    src={q.image}
-    alt={`Soal ${i + 1}`}
-    className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
-  />
-)}
-              </div>
-
-              {!isPraktikum ? (
-  <>
-    <div className="mt-5 space-y-3">
-      {q.options?.map((opt, j) => (
-        <div key={j} className="flex gap-3">
-          <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-bold text-slate-600">
-  {String.fromCharCode(65 + j)}
-</div>
-
-          <input
-            className={inputClass}
-            value={opt}
-            placeholder={`Opsi ${String.fromCharCode(65 + j)}`}
-            onChange={(e) =>
-              updateOption(i, j, e.target.value)
-            }
-          />
-        </div>
-      ))}
+              
+<div className="sticky top-0 z-20 mb-5 flex flex-col justify-between gap-3 border-b border-slate-200 bg-white pb-4 pt-2 md:flex-row md:items-center">
+  <div className="flex items-center gap-3">
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#061B3A] text-lg font-bold text-white">
+      {i + 1}
     </div>
-  </>
-) : (
-  <div className="mt-5">
-    <label className="mb-2 block text-sm font-bold text-slate-700">
-      Jawaban Praktikum
+
+    <div>
+      <h3 className="font-poppins text-xl font-bold text-[#061B3A]">
+        Soal Nomor {i + 1}
+      </h3>
+
+      <p className="mt-1 text-sm text-slate-500">
+        Edit soal, jawaban, dan pembahasan.
+      </p>
+    </div>
+  </div>
+
+  <button
+    onClick={() => deleteQuestion(i)}
+    className="rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100"
+  >
+    Hapus Soal
+  </button>
+</div>
+
+<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
+
+  {/* KOLOM SOAL */}
+  <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="mb-6 border-b border-slate-200 pb-4">
+      <span className="text-2xl">📄</span>
+      <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+        SOAL
+      </h3>
+    </div>
+
+    <label className="font-semibold text-slate-700">
+      Tulis Soal
     </label>
 
     <textarea
-      className={textareaClass}
-      placeholder="Contoh: Nervus vagus"
-      value={q.essayAnswer || ""}
-      onChange={(e) =>
-        updateEssayAnswer(i, e.target.value)
-      }
+      className={`${textareaClass} h-[260px] resize-none`}
+      placeholder="Tulis soal"
+      value={q.question}
+      onChange={(e) => updateQuestion(i, e.target.value)}
     />
+
+    <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+      <label className="mb-2 block font-semibold text-[#061B3A]">
+        Gambar Soal
+      </label>
+
+      <input
+        type="file"
+        accept="image/*"
+        className="text-sm text-slate-500"
+        onChange={(e) => uploadImage(i, e.target.files?.[0])}
+      />
+
+      <div className="mt-3">
+        <label className="mb-2 block text-sm font-medium text-slate-700">
+          Atau tempel link gambar (ImgBB)
+        </label>
+
+        <input
+          type="text"
+          placeholder="https://i.ibb.co/xxxxx/gambar.png"
+          value={q.image || ""}
+          onChange={(e) => {
+            const copy = [...questions];
+            copy[i].image = e.target.value;
+            setQuestions(copy);
+          }}
+          className={inputClass}
+        />
+      </div>
+
+      {q.image && (
+        <img
+          src={q.image}
+          alt={`Soal ${i + 1}`}
+          className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
+        />
+      )}
+    </div>
   </div>
-)}
 
+  {/* KOLOM JAWABAN */}
+  <div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
+    <div className="mb-6 border-b border-slate-200 pb-4">
+      <span className="text-2xl">🟡</span>
+      <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+        JAWABAN
+      </h3>
+    </div>
 
-              {!isPraktikum && (
-  <div className="mt-5 grid gap-4 md:grid-cols-2">
-    <div>
-      <p className="mb-2 text-sm font-bold text-slate-700">
-        Kunci Jawaban
-      </p>
+    {!isPraktikum ? (
+      <>
+        {optionLabels.map((label, oi) => (
+          <div key={oi} className="mb-4">
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Pilihan {label}
+            </label>
 
-      <select
-        className={inputClass}
-        value={q.answer}
-        onChange={(e) =>
-          updateAnswer(i, Number(e.target.value))
-        }
-      >
-        {q.options?.map((_, idx) => (
-          <option key={idx} value={idx}>
-            Kunci {String.fromCharCode(65 + idx)}
-          </option>
+            <input
+              className={inputClass}
+              value={q.options?.[oi] || ""}
+              onChange={(e) => updateOption(i, oi, e.target.value)}
+            />
+          </div>
         ))}
-      </select>
-    </div>
 
-    <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
-      <p className="font-bold">Jawaban aktif</p>
+        <hr className="border-slate-200" />
 
-      <p className="mt-1 leading-6">
-        {String.fromCharCode(
-          65 + (q.answer || 0)
-        )}
-      </p>
-    </div>
+        <label className="mb-2 mt-5 block text-sm font-semibold text-slate-700">
+          Kunci Jawaban
+        </label>
+
+        <select
+          className={inputClass}
+          value={q.answer}
+          onChange={(e) => updateAnswer(i, Number(e.target.value))}
+        >
+          {optionLabels.map((l, idx) => (
+            <option key={idx} value={idx}>
+              {l}
+            </option>
+          ))}
+        </select>
+      </>
+    ) : (
+      <>
+        <label className="mb-2 block text-sm font-semibold text-slate-700">
+          Jawaban Praktikum
+        </label>
+
+        <textarea
+          className={textareaClass}
+          value={q.essayAnswer || ""}
+          onChange={(e) => updateEssayAnswer(i, e.target.value)}
+        />
+      </>
+    )}
   </div>
-)}
 
-              <textarea
-                className="mt-5 min-h-28 w-full rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
-                placeholder="Pembahasan"
-                value={q.discussion}
-                onChange={(e) => updateDiscussion(i, e.target.value)}
-              />
+  {/* KOLOM PEMBAHASAN */}
+<div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="mb-6 border-b border-slate-200 pb-4">
+      <span className="text-2xl">🟡</span>
+      <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+        PEMBAHASAN
+      </h3>
+    </div>
 
-              <div className="mt-4 rounded-xl border border-dashed border-emerald-200 bg-emerald-50 p-4">
-                <p className="mb-2 text-sm font-bold text-emerald-800">
-                  Gambar Pembahasan
-                </p>
+    <label className="font-semibold text-slate-700">
+  Pembahasan
+</label>
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="text-sm text-slate-500"
-                  onChange={(e) => uploadDiscussionImage(i, e.target.files?.[0])}
-                />
+<textarea
+  className={`${textareaClass} h-[260px] resize-none`}
+  placeholder="Tulis pembahasan"
+  value={q.discussion}
+  onChange={(e) => updateDiscussion(i, e.target.value)}
+/>
 
-                <div className="mt-3">
-  <label className="mb-1 block text-sm font-medium text-slate-700">
-    Atau tempel link gambar (ImgBB)
+<div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+  <label className="mb-2 block font-semibold text-[#061B3A]">
+    Gambar Pembahasan
   </label>
 
   <input
-    type="text"
-    placeholder="https://i.ibb.co/xxxxx/gambar.png"
-    value={q.discussionImage || ""}
-    onChange={(e) => {
-      const copy = [...questions];
-      copy[i].discussionImage = e.target.value;
-      setQuestions(copy);
-    }}
-    className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm focus:border-[#1D5A47] focus:outline-none"
+    type="file"
+    accept="image/*"
+    className="text-sm text-slate-500"
+    onChange={(e) => uploadDiscussionImage(i, e.target.files?.[0])}
   />
+
+  <div className="mt-3">
+    <label className="mb-2 block text-sm font-medium text-slate-700">
+      Atau tempel link gambar (ImgBB)
+    </label>
+
+    <input
+      type="text"
+      placeholder="https://i.ibb.co/xxxxx/gambar.png"
+      value={q.discussionImage || ""}
+      onChange={(e) => {
+        const copy = [...questions];
+        copy[i].discussionImage = e.target.value;
+        setQuestions(copy);
+      }}
+      className={inputClass}
+    />
+  </div>
+
+  {q.discussionImage && (
+    <img
+      src={q.discussionImage}
+      className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
+    />
+  )}
+</div>
+  </div>
 </div>
 
-                {q.discussionImage && (
-                  <img
-                    src={q.discussionImage}
-                    className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
-                  />
-                )}
-              </div>
             </div>
           ))}
 

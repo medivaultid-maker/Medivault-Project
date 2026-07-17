@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../lib/supabase";
 import { useParams, useSearchParams } from "next/navigation";
@@ -78,7 +78,7 @@ console.log("URL =", window.location.pathname);
   const [token, setToken] = useState(0);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 const [resultAttemptId, setResultAttemptId] = useState("");
-
+const numberScrollRef = useRef<HTMLDivElement>(null);
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
 const isEssay = question?.essayAnswer !== null;
@@ -292,6 +292,11 @@ useEffect(() => {
     current.toString()
   );
 }, [current, selectedPackage]);
+useEffect(() => {
+  if (!numberScrollRef.current) return;
+
+  numberScrollRef.current.scrollTop = 320;
+}, [questions.length]);
 useEffect(() => {
   if (!selectedPackage) return;
 
@@ -562,10 +567,10 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
     <main className="min-h-screen bg-[#f8fbff]">
       <Navbar />
 
-      <section className="px-4 pt-2 pb-4 md:px-10 md:pt-3 md:pb-6">
+      <section className="h-[calc(100vh-90px)] overflow-hidden px-4 pt-2 pb-2 md:px-8 md:pt-2 md:pb-2">
         {!submitted ? (
           <div className="mx-auto max-w-7xl">
-            <div className="mb-3 rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
+            <div className="mb-2 rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
               <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                 <div>
                   <p className="mb-2 font-extrabold text-emerald-600">
@@ -591,10 +596,10 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
             </div>
 
             
-                  <div className="flex flex-col gap-4 lg:flex-row items-stretch">
+                 <div className="flex-1 min-h-0 flex">
   {/* Soal & Pilihan */}
-  <div className="flex-1 flex">
-  <div className="flex flex-1 flex-col rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
+ <div className="flex-1 min-h-0 flex">
+ <div className="flex h-[calc(100vh-210px)] flex-1 flex-col rounded-3xl border border-slate-100 bg-white p-3 md:p-5 shadow-sm">
       <div className="mb-4 flex justify-between text-sm font-bold text-slate-500">
         <span>Soal {current + 1}</span>
         <span>dari {selectedPackage?.questions.length ?? 0} soal</span>
@@ -624,12 +629,12 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
 )}
 
       {!isEssay ? (
-  <div className="space-y-3">
+  <div className="space-y-2">
     {question.options?.map((option, index) => (
       <button
         key={index}
         onClick={() => chooseAnswer(index)}
-        className={`w-full rounded-2xl border p-4 text-left font-bold transition ${
+        className={`w-full rounded-2xl border p-3 text-left font-semibold transition ${
           answers[current] === index
             ? "border-[#061B3A] bg-[#061B3A] text-white"
             : "border-slate-200 bg-white text-[#061B3A]"
@@ -661,18 +666,20 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
 
 </div>
       <div className="mt-5 grid grid-cols-3 gap-2 md:flex md:flex-wrap">
-        <button onClick={goBack} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 md:px-5 md:py-3 font-extrabold text-[#061B3A]">
+        <button onClick={goBack} className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold text-[#061B3A]"
+          >
           Back
         </button>
 
         <button
           onClick={toggleDoubt}
-          className="rounded-2xl border border-amber-300 bg-amber-50 px-3 py-2 md:px-5 md:py-3 font-extrabold text-amber-700"
+          className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 font-bold text-amber-700"
         >
           {doubt[current] ? "Batal Ragu-ragu" : "Ragu-ragu"}
         </button>
 
-        <button onClick={goNext} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 md:px-5 md:py-3 font-extrabold text-[#061B3A]">
+        <button onClick={goNext} className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold text-[#061B3A]"
+          >
           Next
         </button>
       </div>
@@ -681,13 +688,16 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
 
   {/* Sidebar Nomor Soal */}
   {/* Sidebar Nomor Soal */}
-<aside className="w-full lg:w-64 flex flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+<aside className="w-full lg:w-64 h-[calc(100vh-210px)] flex flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
   <h3 className="mb-4 text-lg font-extrabold text-[#061B3A]">
     Nomor Soal
   </h3>
 
   {/* Scroll Area */}
-  <div className="overflow-y-auto max-h-[470px] pr-2">
+  <div
+  ref={numberScrollRef}
+  className="flex-1 overflow-y-auto pr-2"
+>
     <div className="grid grid-cols-6 md:grid-cols-5 gap-2">
       {questions.map((_, index) => {
         const answered = answers[index] !== null;

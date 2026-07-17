@@ -723,9 +723,9 @@ order_no: index + 1,
   id={`soal-${i + 1}`}
 >
     <div
-      id={`soal-${i + 1}`}
-      className="rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-sm"
-    >
+  id={`soal-${i + 1}`}
+  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+>
               <div className="sticky top-0 z-20 mb-5 flex flex-col justify-between gap-3 border-b border-slate-200 bg-white pb-4 pt-2 md:flex-row md:items-center">
                 <div>
                   
@@ -754,13 +754,13 @@ order_no: index + 1,
                 </button>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
+             <div className="mt-6 grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
 
 <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
 <div className="mb-6 border-b border-slate-200 pb-4">
   <span className="text-2xl">📄</span>
-   <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+  <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
     SOAL
   </h3>
 </div>
@@ -883,7 +883,7 @@ className={`${textareaClass} h-[260px] resize-none`}
 
 </div>
 
-<div className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm space-y-5">
+<div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
 <div className="mb-6 border-b border-slate-200 pb-4">
   <span className="text-2xl">🟡</span>
    <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
@@ -896,16 +896,16 @@ className={`${textareaClass} h-[260px] resize-none`}
 </h4>
 
               <textarea
-                className="mt-5 min-h-28 w-full rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+  className="min-h-40 w-full rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
                 placeholder="Pembahasan"
                 value={q.discussion}
                 onChange={(e) => updateDiscussion(i, e.target.value)}
               />
 
-              <div className="mt-4 rounded-xl border border-dashed border-emerald-200 bg-emerald-50 p-4">
-                <p className="mb-2 text-sm font-bold text-emerald-800">
-                  Gambar Pembahasan
-                </p>
+              <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+                <p className="mb-2 font-semibold text-[#065F46]">
+  Gambar Pembahasan
+</p>
 
                 <input
                   type="file"
@@ -928,8 +928,8 @@ className={`${textareaClass} h-[260px] resize-none`}
       copy[i].discussionImage = e.target.value;
       setQuestions(copy);
     }}
-    className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm focus:border-[#1D5A47] focus:outline-none"
-  />
+  className={inputClass}
+/>
 </div>
 
                 {q.discussionImage && (
