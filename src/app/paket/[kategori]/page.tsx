@@ -346,70 +346,97 @@ return (
 ) : (
   <div className="mt-6 overflow-hidden rounded-3xl border bg-white shadow-sm">
 
-    <div className="hidden md:grid grid-cols-[60px_3fr_90px_180px_150px] items-center gap-4 border-b bg-slate-50 p-4 text-sm font-bold text-slate-500">
-  <span>No</span>
-  <span>Judul Latihan</span>
-  <span>Skor</span>
-  <span>Tanggal</span>
-  <span>Status</span>
+  <table className="w-full table-fixed">
 
-</div>
+    <colgroup>
+      <col className="w-16" />
+      <col />
+      <col className="w-40" />
+      <col className="w-65" />
+      <col className="w-50" />
+    </colgroup>
 
-            {filteredHistory.map((item, index) => {
-  console.log("ITEM HISTORY PAKET =", item);
+    <thead className="border-b bg-slate-50">
+      <tr className="text-left text-sm font-bold text-slate-500">
 
-  return (
-              
-              <div
-  key={item.id}
-  className="hidden md:grid grid-cols-[60px_3fr_90px_180px_150px] items-center gap-4 border-b p-4 text-sm"
->
-                <span className="font-semibold text-slate-500">
-  {index + 1}
-</span>
-                {item.status === "ongoing" ? (
-  <Link
-  href={`/ujian/${item.packageId}`}
-  className="block max-w-[220px] truncate font-semibold text-[#061B3A] hover:text-emerald-600 transition"
-  title={item.title}
->
-  {item.title}
-</Link>
-) : (
-  <Link
-    href={`/hasil/${item.id}`}
-    className="font-semibold text-[#061B3A] hover:text-emerald-600 transition"
-  >
-    {item.title}
-  </Link>
-)}
+        <th className="px-6 py-5">
+          No
+        </th>
 
-                <span className="font-bold text-emerald-600">
-                  {item.score}
-                </span>
+        <th className="px-6 py-5">
+          Judul Latihan
+        </th>
 
-                <span>{item.date}</span>
+        <th className="px-6 py-5">
+          Skor
+        </th>
 
-                <span>
-  {item.status === "ongoing" ? (
-    <span className="font-bold text-amber-500">
-      On Going
-    </span>
-  ) : item.score >= 75 ? (
-    <span className="font-bold text-emerald-600">
-      Lulus
-    </span>
-  ) : (
-    <span className="font-bold text-red-500">
-      Belum Lulus
-    </span>
-  )}
-</span>
+        <th className="px-6 py-5">
+          Tanggal
+        </th>
 
-             
-                </div>
-  );
-})}
+        <th className="px-6 py-5">
+          Status
+        </th>
+
+      </tr>
+    </thead>
+
+    <tbody>
+
+            {filteredHistory.map((item, index) => (
+  <tr key={item.id} className="border-b last:border-b-0">
+
+    <td className="px-6 py-5 text-slate-500 font-semibold">
+      {index + 1}
+    </td>
+
+    <td className="px-6 py-5">
+      {item.status === "ongoing" ? (
+        <Link
+          href={`/ujian/${item.packageId}`}
+          className="font-semibold text-[#061B3A] hover:text-emerald-600"
+        >
+          {item.title}
+        </Link>
+      ) : (
+        <Link
+          href={`/hasil/${item.id}`}
+          className="font-semibold text-[#061B3A] hover:text-emerald-600"
+        >
+          {item.title}
+        </Link>
+      )}
+    </td>
+
+    <td className="px-6 py-5 font-bold text-emerald-600">
+      {item.score}
+    </td>
+
+    <td className="px-6 py-5">
+      {item.date}
+    </td>
+
+    <td className="px-6 py-5">
+      {item.status === "ongoing" ? (
+        <span className="font-bold text-amber-500">
+          On Going
+        </span>
+      ) : item.score >= 75 ? (
+        <span className="font-bold text-emerald-600">
+          Lulus
+        </span>
+      ) : (
+        <span className="font-bold text-red-500">
+          Belum Lulus
+        </span>
+      )}
+    </td>
+
+  </tr>
+))}
+    </tbody>
+  </table>
 
           </div>
 )}

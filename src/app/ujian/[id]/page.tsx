@@ -78,6 +78,17 @@ console.log("URL =", window.location.pathname);
   const [token, setToken] = useState(0);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 const [resultAttemptId, setResultAttemptId] = useState("");
+const [examResult, setExamResult] = useState({
+  score: 0,
+  passingGrade: 70,
+  correctCount: 0,
+  wrongCount: 0,
+  unansweredCount: 0,
+  doubtCount: 0,
+  totalQuestions: 0,
+  duration: 0,
+  status: "Belum Lulus",
+});
 const numberScrollRef = useRef<HTMLDivElement>(null);
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
@@ -479,6 +490,7 @@ setSubmitted(true);
   const doubtCount = doubt.filter((item) => item === true).length;
 
   const finalScore = Math.round((correctCount / totalQuestions) * 100);
+  
 
   const savedAttemptId = localStorage.getItem("medivault_attempt_id");
 
@@ -755,12 +767,11 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
               Ujian Selesai
             </p>
 
-            <p className="mt-6 text-5xl font-extrabold text-emerald-600">
-  {Math.round((score / (selectedPackage?.questions.length ?? 1)) * 100)}
-</p>
-
 <p className="mt-3 text-lg font-semibold text-slate-600">
   Skor Kamu
+</p>
+            <p className="mt-6 text-5xl font-extrabold text-emerald-600">
+  {Math.round((score / (selectedPackage?.questions.length ?? 1)) * 100)}
 </p>
 
             <button
