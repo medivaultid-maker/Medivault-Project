@@ -527,59 +527,64 @@ text-[#234F42]">
             </div>
 
             {/* INFORMASI */}
-            <div>
-              <h3 className="mb-5 text-sm font-black text-[#061B3A]">
-                Informasi
-              </h3>
+<div>
+  <h3 className="mb-5 text-sm font-black text-[#061B3A]">
+    Informasi
+  </h3>
 
-              <ul className="space-y-3 text-sm font-medium text-slate-500">
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    Tentang Kami
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    Kontak
-                  </Link>
-                </li>
-              </ul>
-            </div>
+  <ul className="space-y-3 text-sm font-medium text-slate-500">
+    <li>
+      <Link href="/tentang-kami" className="transition hover:text-[#0F766E]">
+        Tentang Kami
+      </Link>
+    </li>
 
-            {/* BANTUAN */}
-            <div>
-              <h3 className="mb-5 text-sm font-black text-[#061B3A]">
-                Bantuan
-              </h3>
+    <li>
+      <Link href="/blog" className="transition hover:text-[#0F766E]">
+        Blog
+      </Link>
+    </li>
 
-              <ul className="space-y-3 text-sm font-medium text-slate-500">
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    Panduan Pengguna
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    Syarat & Ketentuan
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="transition hover:text-[#0F766E]">
-                    Kebijakan Privasi
-                  </Link>
-                </li>
-              </ul>
-            </div>
+    <li>
+      <Link href="/faq" className="transition hover:text-[#0F766E]">
+        FAQ
+      </Link>
+    </li>
+
+    <li>
+      <Link href="/kontak" className="transition hover:text-[#0F766E]">
+        Kontak
+      </Link>
+    </li>
+  </ul>
+</div>
+
+{/* BANTUAN */}
+<div>
+  <h3 className="mb-5 text-sm font-black text-[#061B3A]">
+    Bantuan
+  </h3>
+
+  <ul className="space-y-3 text-sm font-medium text-slate-500">
+    <li>
+      <Link href="/panduan" className="transition hover:text-[#0F766E]">
+        Panduan Pengguna
+      </Link>
+    </li>
+
+    <li>
+      <Link href="/syarat-ketentuan" className="transition hover:text-[#0F766E]">
+        Syarat & Ketentuan
+      </Link>
+    </li>
+
+    <li>
+      <Link href="/kebijakan-privasi" className="transition hover:text-[#0F766E]">
+        Kebijakan Privasi
+      </Link>
+    </li>
+  </ul>
+</div>
 
             {/* NEWSLETTER */}
             <div>

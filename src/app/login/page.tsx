@@ -82,6 +82,22 @@ const forgotPassword = async () => {
   alert("Link reset password telah dikirim ke email kamu.");
 };
 
+const loginGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: {
+        prompt: "select_account",
+      },
+    },
+  });
+
+  if (error) {
+    alert(error.message);
+  }
+};
+
   return (
     <main>
       <Navbar />
@@ -169,13 +185,11 @@ const forgotPassword = async () => {
             </button>
 
             <button
-              onClick={() =>
-                alert("Login Google demo belum terhubung backend.")
-              }
-              style={styles.googleButton}
-            >
-              Login dengan Google
-            </button>
+  onClick={loginGoogle}
+  style={styles.googleButton}
+>
+  Login dengan Google
+</button>
 
             <button
   onClick={forgotPassword}
