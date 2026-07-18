@@ -59,6 +59,28 @@ if (profile?.role === "admin") {
   router.push("/dashboard");
 }
 };
+const forgotPassword = async () => {
+  const cleanEmail = email.trim().toLowerCase();
+
+  if (!cleanEmail) {
+    alert("Masukkan email terlebih dahulu.");
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    cleanEmail,
+    {
+      redirectTo: `${window.location.origin}/reset-password`,
+    }
+  );
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Link reset password telah dikirim ke email kamu.");
+};
 
   return (
     <main>
@@ -156,15 +178,11 @@ if (profile?.role === "admin") {
             </button>
 
             <button
-              onClick={() =>
-                alert(
-                  "Fitur reset password demo. Nanti bisa dihubungkan ke email."
-                )
-              }
-              style={styles.linkButton}
-            >
-              Lupa password?
-            </button>
+  onClick={forgotPassword}
+  style={styles.linkButton}
+>
+  Lupa password?
+</button>
           </div>
 
           <p style={styles.bottomText}>
