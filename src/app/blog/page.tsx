@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import InfoLayout from "../components/info/InfoLayout";
 import InfoHero from "../components/info/InfoHero";
 import InfoCTA from "../components/info/InfoCTA";
@@ -58,6 +60,26 @@ const articles = [
 ];
 
 export default function BlogPage() {
+
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+
+  const categories = [
+    "Semua",
+    "UKMPPD",
+    "OSCE",
+    "Anatomi",
+    "Histologi",
+    "Farmakologi",
+    "Koas",
+  ];
+
+  const filteredArticles =
+    selectedCategory === "Semua"
+      ? articles
+      : articles.filter(
+          (article) => article.category === selectedCategory
+        );
+
   return (
     <InfoLayout>
       <InfoHero
@@ -81,20 +103,17 @@ export default function BlogPage() {
           />
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          {[
-            "Semua",
-            "UKMPPD",
-            "OSCE",
-            "Anatomi",
-            "Histologi",
-            "Farmakologi",
-            "Koas",
-          ].map((item) => (
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          {categories.map((item) => (
             <button
-              key={item}
-              className="rounded-full border border-[#DDFBEF] bg-[#ECFDF5] px-5 py-2 font-semibold text-[#0F766E] transition hover:bg-[#0F766E] hover:text-white"
-            >
+  key={item}
+  onClick={() => setSelectedCategory(item)}
+  className={`rounded-full border px-5 py-2 font-semibold transition ${
+    selectedCategory === item
+      ? "bg-[#0F766E] text-white"
+      : "border-[#DDFBEF] bg-[#ECFDF5] text-[#0F766E] hover:bg-[#0F766E] hover:text-white"
+  }`}
+>
               {item}
             </button>
           ))}
@@ -104,7 +123,7 @@ export default function BlogPage() {
       {/* ARTICLES */}
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {articles.map((article) => (
+          {filteredArticles.map((article) => (
             <div
               key={article.title}
               className="overflow-hidden rounded-[32px] border border-[#E7F6F0] bg-white shadow-lg transition duration-300 hover:-translate-y-2 hover:shadow-2xl"

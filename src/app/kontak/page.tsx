@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import InfoLayout from "../components/info/InfoLayout";
 import InfoHero from "../components/info/InfoHero";
 import InfoCTA from "../components/info/InfoCTA";
@@ -21,6 +22,32 @@ import {
 import { FaInstagram } from "react-icons/fa";
 
 export default function KontakPage() {
+    const [form, setForm] = useState({
+    nama: "",
+    email: "",
+    subjek: "",
+    pesan: "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const emailTujuan = "medivaultid@gmail.com";
+
+    const isiPesan = `
+Nama: ${form.nama}
+Email: ${form.email}
+
+Pesan:
+${form.pesan}
+    `;
+
+    const mailto = `mailto:${emailTujuan}?subject=${encodeURIComponent(
+      form.subjek
+    )}&body=${encodeURIComponent(isiPesan)}`;
+
+    window.location.href = mailto;
+  };
   return (
     <InfoLayout>
       <InfoHero
@@ -99,29 +126,41 @@ export default function KontakPage() {
               Kirim Pesan
             </h2>
 
-            <div className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="relative">
                 <User className="absolute left-4 top-4 text-slate-400" size={20} />
 
                 <input
-                  placeholder="Nama"
-                  className="w-full rounded-2xl border border-slate-200 py-4 pl-12 pr-4 outline-none focus:border-[#0F766E]"
-                />
+  placeholder="Nama"
+  value={form.nama}
+  onChange={(e) =>
+    setForm({ ...form, nama: e.target.value })
+  }
+  className="w-full rounded-2xl border border-slate-200 py-4 pl-12 pr-4 outline-none focus:border-[#0F766E]"
+/>
               </div>
 
               <div className="relative">
                 <AtSign className="absolute left-4 top-4 text-slate-400" size={20} />
 
                 <input
-                  placeholder="Email"
-                  className="w-full rounded-2xl border border-slate-200 py-4 pl-12 pr-4 outline-none focus:border-[#0F766E]"
-                />
+  placeholder="Email"
+  value={form.email}
+  onChange={(e) =>
+    setForm({ ...form, email: e.target.value })
+  }
+  className="w-full rounded-2xl border border-slate-200 py-4 pl-12 pr-4 outline-none focus:border-[#0F766E]"
+/>
               </div>
 
               <input
-                placeholder="Subjek"
-                className="w-full rounded-2xl border border-slate-200 px-4 py-4 outline-none focus:border-[#0F766E]"
-              />
+  placeholder="Subjek"
+  value={form.subjek}
+  onChange={(e) =>
+    setForm({ ...form, subjek: e.target.value })
+  }
+  className="w-full rounded-2xl border border-slate-200 px-4 py-4 outline-none focus:border-[#0F766E]"
+/>
 
               <div className="relative">
                 <MessageSquare
@@ -130,21 +169,25 @@ export default function KontakPage() {
                 />
 
                 <textarea
-                  rows={5}
-                  placeholder="Tulis pesan Anda..."
-                  className="w-full rounded-2xl border border-slate-200 py-4 pl-12 pr-4 outline-none focus:border-[#0F766E]"
-                />
+  rows={5}
+  placeholder="Tulis pesan Anda..."
+  value={form.pesan}
+  onChange={(e) =>
+    setForm({ ...form, pesan: e.target.value })
+  }
+  className="w-full rounded-2xl border border-slate-200 py-4 pl-12 pr-4 outline-none focus:border-[#0F766E]"
+/>
               </div>
 
-              <button className="inline-flex items-center gap-3 rounded-full bg-[#0F766E] px-8 py-4 font-bold text-white transition hover:-translate-y-1 hover:bg-[#0C665F]">
-                <Send size={18} />
-                Kirim Pesan
-              </button>
-
-              <p className="text-sm text-slate-500">
-                *Fitur pengiriman pesan akan segera tersedia.
-              </p>
-            </div>
+              <button
+  type="submit"
+  className="inline-flex items-center gap-3 rounded-full bg-[#0F766E] px-8 py-4 font-bold text-white transition hover:-translate-y-1 hover:bg-[#0C665F]"
+>
+  <Send size={18} />
+  Kirim Pesan
+</button>
+</form>
+            
           </div>
         </div>
       </section>

@@ -19,7 +19,7 @@ export default function SyaratKetentuanPage() {
     <InfoLayout>
       <InfoHero
         title="Syarat & Ketentuan"
-        subtitle="Dengan menggunakan , Anda dianggap telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku."
+        subtitle="Dengan menggunakan, Anda dianggap telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku."
         icon={<FileText size={40} />}
       />
 
@@ -31,7 +31,7 @@ export default function SyaratKetentuanPage() {
           </h2>
 
           <p className="mt-6 text-lg leading-8 text-slate-600">
-             menyediakan platform pembelajaran digital untuk
+             Menyediakan platform pembelajaran digital untuk
             membantu mahasiswa kedokteran dalam mempersiapkan ujian dan
             meningkatkan kompetensi akademik. Dengan menggunakan layanan
             ini, pengguna menyetujui seluruh ketentuan yang tercantum
@@ -110,7 +110,7 @@ export default function SyaratKetentuanPage() {
 
             <ul className="list-disc space-y-4 pl-6 leading-8 text-slate-600">
               <li>Penyalahgunaan layanan dapat mengakibatkan pembatasan akses.</li>
-              <li> berhak menonaktifkan akun yang melanggar ketentuan.</li>
+              <li> Berhak menonaktifkan akun yang melanggar ketentuan.</li>
             </ul>
           </div>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { supabase } from "./lib/supabase";
+import { useState } from "react";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
 import {
@@ -71,6 +73,36 @@ function YoutubeIcon({ className = "h-4 w-4" }) {
   );
 }
 export default function Home() {
+  const [email, setEmail] = useState("");
+const [message, setMessage] = useState("");
+const handleSubscribe = async () => {
+
+  if (!email) {
+    setMessage("Masukkan email terlebih dahulu");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("subscribers")
+    .insert([
+      {
+        email: email,
+      },
+    ]);
+
+  if (error) {
+    if (error.code === "23505") {
+      setMessage("Email sudah terdaftar");
+    } else {
+      setMessage("Terjadi kesalahan");
+    }
+    return;
+  }
+
+
+  setMessage("Berhasil berlangganan update Medivault 🎉");
+  setEmail("");
+};
   const { scrollY } = useScroll();
 
   const yBg1 = useTransform(scrollY, [0, 300], [0, 120]);
@@ -420,12 +452,12 @@ text-[#234F42]">
             </div>
 
             <div className="flex md:justify-end">
-              <button
-  onClick={() => alert("Fitur materi sedang dalam pengembangan.")}
+              <Link
+  href="/materi"
   className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-base font-extrabold text-[#061B3A] shadow-lg transition hover:-translate-y-0.5 hover:bg-[#ECFDF5]"
 >
   Jelajahi Materi
-</button>
+</Link>
             </div>
           </div>
         </div>
@@ -503,7 +535,7 @@ text-[#234F42]">
                 <li>
                   <Link
                     href="/"
-                    className="font-bold text-[#0F766E] transition hover:text-[#061B3A]"
+                    className="font text-[#0F766E] transition hover:text-[#061B3A]"
                   >
                     Beranda
                   </Link>
@@ -596,17 +628,30 @@ text-[#234F42]">
                 Dapatkan informasi fitur terbaru dan konten belajar langsung melalui email.
               </p>
 
-              <div className="flex items-center gap-3">
-                <input
-                  type="email"
-                  placeholder="Masukkan email kamu"
-                  className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 outline-none transition placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10"
-                />
+              <div className="flex flex-col gap-3">
+  <div className="flex items-center gap-3">
+    <input
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="Masukkan email kamu"
+      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 outline-none transition placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10"
+    />
 
-                <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#234F42] to-[#0F766E] text-white">
-                  <Send size={17} />
-                </button>
-              </div>
+    <button
+      onClick={handleSubscribe}
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#234F42] to-[#0F766E] text-white"
+    >
+      <Send size={17} />
+    </button>
+  </div>
+
+  {message && (
+    <p className="text-xs font-semibold text-[#0F766E]">
+      {message}
+    </p>
+  )}
+</div>
             </div>
           </div>
 
