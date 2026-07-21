@@ -3,7 +3,6 @@ import { supabase } from "../../../lib/supabase";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "../../../components/Navbar";
-
 import {
   DndContext,
   closestCenter,
@@ -21,19 +20,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-type QuestionItem = {
-  id: string;
-  question: string;
-  image?: string;
-  options?: string[];
-  answer?: number;
-  essayAnswer?: string;
-  discussion: string;
-  discussionImage?: string;
-
-  topic?: string;
-};
-
+import QuestionEditor, {
+  QuestionItem,
+} from "../../../components/admin/QuestionEditor";
 const categories = [
   { label: "CBT Anatomi", value: "anatomi-teori" },
   { label: "Praktikum Anatomi", value: "anatomi-praktikum" },
@@ -108,12 +97,13 @@ const router = useRouter();
 const id = params.id as string;
 
   const [questions, setQuestions] = useState<QuestionItem[]>([
-  {
+{
  id: crypto.randomUUID(),
+ topic: "",
  question: "",
  options: [],
  answer: undefined,
- essayAnswer: "",
+ essayAnswer: [""],
  discussion: "",
 },
 ]);
@@ -183,13 +173,15 @@ useEffect(() => {
     setQuestions(
       soal.map((q) => ({
         id: q.id,
+        topic: q.topic || "",
         question: q.question,
         image: q.image,
-        options: q.options,
+        options: q.options || ["","","","",""],
         answer: q.answer,
         essayAnswer: q.essay_answer || [""],
         discussion: q.discussion,
         discussionImage: q.discussion_image,
+        
       }))
     );
   };
@@ -206,10 +198,16 @@ useEffect(() => {
   };
 
   const updateOption = (qi: number, oi: number, val: string) => {
-    const copy = [...questions];
-    copy[qi].options[oi] = val;
-    setQuestions(copy);
-  };
+  const copy = [...questions];
+
+  if (!copy[qi].options) {
+    copy[qi].options = ["","","","",""];
+  }
+
+  copy[qi].options[oi] = val;
+
+  setQuestions(copy);
+};
 
   const updateAnswer = (qi: number, val: number) => {
     const copy = [...questions];
@@ -227,17 +225,21 @@ useEffect(() => {
   val: string
 ) => {
   const copy = [...questions];
-  copy[i].essayAnswer = val;
+  copy[i].essayAnswer = [val];
   setQuestions(copy);
 };
+
 
   const addQuestion = () => {
   setQuestions([
     ...questions,
     {
-  id: crypto.randomUUID(),
-  question: "",
+      id: crypto.randomUUID(),
+      topic: "",
+      question: "",
+      options: ["","","","",""],
       answer: 0,
+      essayAnswer: [""],
       discussion: "",
     },
   ]);
@@ -334,16 +336,17 @@ const { error: insertQuestionError } = await supabase
   .from("questions")
   .insert(
     questions.map((q, index) => ({
-      package_id: id,
-      question: q.question,
-      image: q.image || null,
-      options: q.options || null,
-      answer: q.answer ?? null,
-      essay_answer: q.essayAnswer || null,
-      discussion: q.discussion || "",
-      discussion_image: q.discussionImage || null,
-      order_no: index + 1,
-    }))
+  package_id: id,
+  topic: q.topic || "",
+  question: q.question,
+  image: q.image || null,
+  options: q.options || null,
+  answer: q.answer ?? null,
+  essay_answer: q.essayAnswer || null,
+  discussion: q.discussion || "",
+  discussion_image: q.discussionImage || null,
+  order_no: index + 1,
+}))
   );
 
 if (insertQuestionError) {
@@ -383,6 +386,7 @@ return;
  await supabase.from("questions").insert(
   questions.map((q, index) => ({
       package_id: paket.id,
+      topic: q.topic || "",
       question: q.question,
       image: q.image || null,
       options: q.options || null,
@@ -447,97 +451,20 @@ order_no: index + 1,
           </div>
         </section>
 
-        <section className="px-6 py-8">
-          <div className="mx-auto max-w-6xl space-y-5">
-            {questions.map((q, i) => (
-              <div
-                key={q.id}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-              >
-                <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                  <div>
-                    <p className="font-poppins text-lg font-bold text-[#061B3A]">
-                      Soal {i + 1}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Kunci jawaban:{" "}
-                      <span className="font-bold text-emerald-600">
-                        {String.fromCharCode(65 + q.answer)}
-                      </span>
-                    </p>
-                  </div>
+       <section className="px-6 py-8">
+  <div className="mx-auto max-w-6xl space-y-5">
+    <QuestionEditor
+      questions={questions}
+      setQuestions={setQuestions}
+      isPraktikum={isPraktikum}
+    />
+  </div>
+</section>
 
-                  <div className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700">
-                    CBT Preview
-                  </div>
-                </div>
-
-                <div className="whitespace-pre-line rounded-xl bg-slate-50 p-5 text-sm font-medium leading-7 text-slate-800">
-                  {q.question}
-                </div>
-
-                {q.image && (
-  <img
-    src={q.image}
-    alt={`Soal ${i + 1}`}
-    className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
-    onError={(e) => {
-      e.currentTarget.style.display = "none";
-    }}
-  />
-)}
-
-                <div className="mt-5 grid gap-3">
-                  {q.options.map((opt, j) => (
-                    <div
-                      key={j}
-                      className={`flex gap-3 rounded-xl border p-4 ${
-                        q.answer === j
-                          ? "border-emerald-300 bg-emerald-50"
-                          : "border-slate-200 bg-white"
-                      }`}
-                    >
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                          q.answer === j
-                            ? "bg-emerald-600 text-white"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {String.fromCharCode(65 + j)}
-                      </div>
-
-                      <p className="pt-1 text-sm leading-6 text-slate-700">
-                        {opt}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {q.discussion && (
-                  <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-                    <p className="font-poppins text-sm font-bold text-emerald-800">
-                      Pembahasan
-                    </p>
-                    <div className="mt-2 whitespace-pre-line text-sm leading-7 text-slate-700">
-                      {q.discussion}
-                    </div>
-                  </div>
-                )}
-
-                {q.discussionImage && (
-                  <img
-                    src={q.discussionImage}
-                    className="mt-4 max-h-56 rounded-xl border border-slate-200 object-contain"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
     );
   }
+
 
   return (
     <main className="min-h-screen bg-slate-50 font-inter">
@@ -719,234 +646,11 @@ order_no: index + 1,
   </h2>
 </div>
 
-          {questions.map((q, i) => (
-  <div
-  key={q.id}
-  id={`soal-${i + 1}`}
->
-    <div
-  id={`soal-${i + 1}`}
-  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
->
-              <div className="sticky top-0 z-20 mb-5 flex flex-col justify-between gap-3 border-b border-slate-200 bg-white pb-4 pt-2 md:flex-row md:items-center">
-                <div>
-                  
-                  <div className="flex items-center gap-3">
-  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#061B3A] text-lg font-bold text-white">
-    {i + 1}
-  </div>
-
- <div>
-  <h3 className="font-poppins text-xl font-bold text-[#061B3A]">
-    Soal Nomor {i + 1}
-  </h3>
-
-  <p className="mt-1 text-sm text-slate-500">
-    Edit soal, jawaban, dan pembahasan.
-  </p>
-</div>
-</div>
-                </div>
-
-                <button
-                  onClick={() => deleteQuestion(i)}
-                  className="rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100"
-                >
-                  Hapus Soal
-                </button>
-              </div>
-
-             <div className="mt-6 grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-
-<div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-<div className="mb-6 border-b border-slate-200 pb-4">
-  <span className="text-2xl">📄</span>
-  <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
-    SOAL
-  </h3>
-</div>
-
-<label className="font-semibold text-slate-700">
-  Tulis Soal
-</label>
-
-              <textarea
-className={`${textareaClass} h-[260px] resize-none`}
-                placeholder="Tulis soal"
-                value={q.question}
-                onChange={(e) => updateQuestion(i, e.target.value)}
-              />
-
-              <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-                <label className="mb-2 block font-semibold text-[#061B3A]">
-  Gambar Soal
-</label>
-
-<input
-  type="file"
-  accept="image/*"
-  className="text-sm text-slate-500"
-  onChange={(e) => uploadImage(i, e.target.files?.[0])}
+  <QuestionEditor
+  questions={questions}
+  setQuestions={setQuestions}
+  isPraktikum={isPraktikum}
 />
-
-<div className="mt-3">
-  <label className="mb-2 block text-sm font-medium text-slate-700">
-    Atau tempel link gambar (ImgBB)
-  </label>
-
-  <input
-    type="text"
-    placeholder="https://i.ibb.co/xxxxx/gambar.png"
-    value={q.image || ""}
-    onChange={(e) => {
-      const copy = [...questions];
-      copy[i].image = e.target.value;
-      setQuestions(copy);
-    }}
-    className={inputClass}
-  />
-</div>
-
-{q.image && (
-  <img
-    src={q.image}
-    alt={`Soal ${i + 1}`}
-    className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
-  />
-)}
-              </div>
-              
-                   
-</div>
-
-<div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
-
-<div className="mb-6 border-b border-slate-200 pb-4">
-  <span className="text-2xl">🟡</span>
-  <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
-    JAWABAN
-  </h3>
-</div>
-
-  {!isPraktikum ? (
-    <>
-      {optionLabels.map((label, oi) => (
-        <div key={oi} className="mb-4">
-          <label className="mb-2 block text-sm font-semibold text-slate-700">
-            Pilihan {label}
-          </label>
-
-          <input
-            className={inputClass}
-            value={q.options?.[oi] || ""}
-            onChange={(e) =>
-              updateOption(i, oi, e.target.value)
-            }
-          />
-        </div>
-      ))}
-
-      <hr className="border-slate-200" />
-      
-      <label className="mb-2 mt-5 block text-sm font-semibold text-slate-700">
-        Kunci Jawaban
-      </label>
-
-      <select
-        className={inputClass}
-        value={q.answer}
-        onChange={(e) =>
-          updateAnswer(i, Number(e.target.value))
-        }
-      >
-        {optionLabels.map((l, idx) => (
-          <option key={idx} value={idx}>
-            {l}
-          </option>
-        ))}
-      </select>
-    </>
-  ) : (
-    <>
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
-        Jawaban Praktikum
-      </label>
-
-      <textarea
-        className={textareaClass}
-        value={q.essayAnswer || ""}
-        onChange={(e) =>
-          updateEssayAnswer(i, e.target.value)
-        }
-      />
-    </>
-  )}
-
-</div>
-
-<div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
-<div className="mb-6 border-b border-slate-200 pb-4">
-  <span className="text-2xl">🟡</span>
-   <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
-    PEMBAHASAN
-  </h3>
-</div>
-
-<h4 className="text-sm font-bold text-emerald-700">
-  Pembahasan
-</h4>
-
-              <textarea
-  className="min-h-40 w-full rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
-                placeholder="Pembahasan"
-                value={q.discussion}
-                onChange={(e) => updateDiscussion(i, e.target.value)}
-              />
-
-              <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-                <p className="mb-2 font-semibold text-[#065F46]">
-  Gambar Pembahasan
-</p>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="text-sm text-slate-500"
-                  onChange={(e) => uploadDiscussionImage(i, e.target.files?.[0])}
-                />
-
-                <div className="mt-3">
-  <label className="mb-1 block text-sm font-medium text-slate-700">
-    Atau tempel link gambar (ImgBB)
-  </label>
-
-  <input
-    type="text"
-    placeholder="https://i.ibb.co/xxxxx/gambar.png"
-    value={q.discussionImage || ""}
-    onChange={(e) => {
-      const copy = [...questions];
-      copy[i].discussionImage = e.target.value;
-      setQuestions(copy);
-    }}
-  className={inputClass}
-/>
-</div>
-
-                {q.discussionImage && (
-                  <img
-                    src={q.discussionImage}
-                    className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
-                  />
-                )}
-                </div>
-
-</div>
-              </div>
-                        </div>
-          </div>
-        ))}
 
 <DragOverlay>
   {activeId ? (

@@ -290,7 +290,24 @@ const paginatedPackages = filteredPackages.slice(
 
     <Link
       href="/admin/paket"
-      className="rounded-xl bg-[#1D5A47] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#174838]"
+      className="
+inline-flex
+items-center
+gap-2
+rounded-2xl
+border-2
+border-[#061B3A]
+bg-white
+px-6
+py-3
+font-extrabold
+text-[#061B3A]
+transition
+duration-200
+hover:bg-[#061B3A]
+hover:text-white
+hover:shadow-lg
+"
     >
       + Upload Paket Baru
     </Link>

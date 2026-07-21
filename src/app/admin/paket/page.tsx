@@ -10,7 +10,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-
+import QuestionEditor from "../../components/admin/QuestionEditor";
 import {
   SortableContext,
   rectSortingStrategy,
@@ -22,7 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 type QuestionItem = {
   id: string;
-   topic: string;
+  topic: string;
   question: string;
   image?: string;
   options?: string[];
@@ -323,11 +323,17 @@ console.log("JUMLAH =", parsed.length);
   setQuestions(copy);
 };
 
-  const updateOption = (qi: number, oi: number, val: string) => {
-    const copy = [...questions];
-    copy[qi].options[oi] = val;
-    setQuestions(copy);
-  };
+const updateOption = (qi:number, oi:number, val:string)=>{
+  const copy=[...questions];
+
+  if(!copy[qi].options){
+    copy[qi].options=["","","","",""];
+  }
+
+  copy[qi].options[oi]=val;
+
+  setQuestions(copy);
+};
 
   const updateAnswer = (qi: number, val: number) => {
     const copy = [...questions];
@@ -556,91 +562,15 @@ window.location.href = "/admin";
 
         <section className="px-6 py-8">
           <div className="mx-auto max-w-6xl space-y-5">
-            {questions.map((q, i) => (
-              <div
-  key={q.id}
-  className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
->
-                <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                  <div>
-                    <p className="font-poppins text-lg font-bold text-[#061B3A]">
-                      Soal {i + 1}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Kunci jawaban:{" "}
-                      <span className="font-bold text-emerald-600">
-                        {String.fromCharCode(65 + q.answer)}
-                      </span>
-                    </p>
-                  </div>
-
-                  <div className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700">
-                    CBT Preview
-                  </div>
+            <QuestionEditor
+    questions={questions}
+    setQuestions={setQuestions}
+    isPraktikum={isPraktikum}
+/>
                 </div>
 
-                <div className="whitespace-pre-line rounded-xl bg-slate-50 p-5 text-sm font-medium leading-7 text-slate-800">
-                  {q.question}
-                </div>
-
-                {q.image && (
-  <img
-    src={q.image}
-    alt={`Soal ${i + 1}`}
-    className="mt-4 max-h-52 rounded-xl border border-slate-200 bg-white object-contain"
-    onError={(e) => {
-      e.currentTarget.style.display = "none";
-    }}
-  />
-)}
-
-                <div className="mt-5 grid gap-3">
-                  {q.options.map((opt, j) => (
-                    <div
-                      key={j}
-                      className={`flex gap-3 rounded-xl border p-4 ${
-                        q.answer === j
-                          ? "border-emerald-300 bg-emerald-50"
-                          : "border-slate-200 bg-white"
-                      }`}
-                    >
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                          q.answer === j
-                            ? "bg-emerald-600 text-white"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {String.fromCharCode(65 + j)}
-                      </div>
-
-                      <p className="pt-1 text-sm leading-6 text-slate-700">
-                        {opt}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {q.discussion && (
-                  <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-                    <p className="font-poppins text-sm font-bold text-emerald-800">
-                      Pembahasan
-                    </p>
-                    <div className="mt-2 whitespace-pre-line text-sm leading-7 text-slate-700">
-                      {q.discussion}
-                    </div>
-                  </div>
-                )}
-
-                {q.discussionImage && (
-                  <img
-                    src={q.discussionImage}
-                    className="mt-4 max-h-56 rounded-xl border border-slate-200 object-contain"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+               
+          
         </section>
       </main>
     );
@@ -1011,26 +941,12 @@ Misalnya:
 />
 
     <button
-      type="button"
-      onClick={() => {
-  const copy = [...questions];
-  copy[i].essayAnswer = [
-    ...(copy[i].essayAnswer || []),
-    "",
-  ];
-
-  setQuestions(copy);
-
-  setTimeout(() => {
-    answerRefs.current[
-      copy[i].essayAnswer!.length - 1
-    ]?.focus();
-  }, 0);
-}}
-      className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-xl font-bold text-red-600 hover:bg-red-100"
-    >
-      ×
-    </button>
+  type="button"
+  onClick={() => deleteEssayAnswer(i, idx)}
+  className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-xl font-bold text-red-600 hover:bg-red-100"
+>
+  ×
+</button>
 
   </div>
 ))}

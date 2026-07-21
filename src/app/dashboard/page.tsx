@@ -351,7 +351,6 @@ className="rounded-2xl bg-white p-5 shadow-sm"
 </div>
 
 )}
-
 {/* AI STUDY RECOMMENDATION */}
 
 {recommendation && (
@@ -477,11 +476,27 @@ Pelajari materi →
               </div>
 
               <Link
-                href="/simulasi"
-                className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-extrabold text-[#061B3A]"
-              >
-                Mulai Latihan
-              </Link>
+  href="/simulasi"
+  className="
+inline-flex
+items-center
+gap-2
+rounded-2xl
+border-2
+border-[#061B3A]
+bg-white
+px-6
+py-3
+font-extrabold
+text-[#061B3A]
+transition
+hover:bg-[#061B3A]
+hover:text-white
+hover:shadow-lg
+"
+>
+  Mulai Latihan →
+</Link>
             </div>
 
             {history.length === 0 ? (

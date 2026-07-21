@@ -91,9 +91,7 @@ const [packages, setPackages] = useState<any[]>([]);
               <Link href="/paket/anatomi-teori" style={styles.option}>
                 <div>
                   <h3 style={styles.optionTitle}>CBT Anatomi</h3>
-                  <p style={styles.optionText}>
-                    Kerjakan simulasi CBT anatomi sesuai paket yang tersedia.
-                  </p>
+              
                 </div>
                 <span style={styles.arrow}>›</span>
               </Link>
@@ -101,9 +99,7 @@ const [packages, setPackages] = useState<any[]>([]);
               <Link href="/paket/anatomi-praktikum" style={styles.option}>
                 <div>
                   <h3 style={styles.optionTitle}>Praktikum Anatomi</h3>
-                  <p style={styles.optionText}>
-                    Kerjakan simulasi praktikum anatomi sesuai paket yang tersedia.
-                  </p>
+                 
                 </div>
                 <span style={styles.arrow}>›</span>
               </Link>
@@ -119,9 +115,7 @@ const [packages, setPackages] = useState<any[]>([]);
               <Link href="/paket/histologi-teori" style={styles.option}>
                 <div>
                   <h3 style={styles.optionTitle}>CBT Histologi</h3>
-                  <p style={styles.optionText}>
-                    Kerjakan simulasi CBT histologi sesuai paket yang tersedia.
-                  </p>
+                  
                 </div>
                 <span style={styles.arrow}>›</span>
               </Link>
@@ -129,9 +123,7 @@ const [packages, setPackages] = useState<any[]>([]);
               <Link href="/paket/histologi-praktikum" style={styles.option}>
                 <div>
                   <h3 style={styles.optionTitle}>Praktikum Histologi</h3>
-                  <p style={styles.optionText}>
-                    Kerjakan simulasi praktikum histologi sesuai paket yang tersedia.
-                  </p>
+                  
                 </div>
                 <span style={styles.arrow}>›</span>
               </Link>
@@ -243,6 +235,9 @@ header: {
     "linear-gradient(135deg,#061B3A 0%,#234F42 100%)",
   color: "#FFFFFF",
   padding: "28px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
 },
 
 histologyHeader: {
@@ -250,12 +245,16 @@ histologyHeader: {
     "linear-gradient(135deg,#234F42 0%,#3A6B5B 100%)",
   color: "#FFFFFF",
   padding: "28px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
 },
   cardTitle: {
   fontSize: "32px",
   fontWeight: 800,
   margin: 0,
   color: "#FFFFFF",
+  textAlign: "center",
 },
   optionList: {
     padding: "20px",
