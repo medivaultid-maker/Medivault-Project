@@ -675,7 +675,18 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
     <main className="min-h-screen bg-[#f8fbff]">
       <Navbar />
 
-      <section className="h-[calc(100vh-90px)] overflow-hidden px-4 pt-2 pb-2 md:px-8 md:pt-2 md:pb-2">
+      <section
+className="
+min-h-[calc(100vh-90px)]
+lg:h-[calc(100vh-90px)]
+px-4
+pt-2
+pb-2
+md:px-8
+overflow-visible
+lg:overflow-hidden
+"
+>
         {!submitted ? (
           <div className="mx-auto max-w-7xl">
             <div className="mb-2 rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
@@ -704,16 +715,37 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
             </div>
 
             
-                 <div className="flex-1 min-h-0 flex">
+                <div className="flex flex-col lg:flex-row gap-4">
   {/* Soal & Pilihan */}
- <div className="flex-1 min-h-0 flex">
- <div className="flex h-[calc(100vh-210px)] flex-1 flex-col rounded-3xl border border-slate-100 bg-white p-3 md:p-5 shadow-sm">
+<div
+className="
+flex
+flex-1
+flex-col
+min-h-fit
+lg:h-[calc(100vh-210px)]
+rounded-3xl
+border
+border-slate-100
+bg-white
+p-3
+md:p-5
+shadow-sm
+"
+>
       <div className="mb-4 flex justify-between text-sm font-bold text-slate-500">
         <span>Soal {current + 1}</span>
         <span>dari {selectedPackage?.questions.length ?? 0} soal</span>
       </div>
 
-<div className="flex-1 overflow-y-auto pr-2">
+<div
+className="
+flex-1
+overflow-visible
+lg:overflow-y-auto
+pr-2
+"
+>
 
      <h2 className="mb-4 whitespace-pre-wrap text-base md:text-xl leading-7 md:leading-relaxed text-[#061B3A]">
   {question.question}
@@ -726,8 +758,8 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
     className="
       mb-6
       mx-auto
-      max-h-[400px]
-      max-w-[500px]
+      max-h-[300px]
+      max-w-[400px]
       cursor-zoom-in
       rounded-xl
       border
@@ -768,45 +800,69 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
   );
 }}
     placeholder="Masukkan nama struktur anatomi..."
-    className="min-h-[150px] w-full rounded-2xl border border-slate-300 p-4"
+    className="min-h-[180px] md:min-h-[150px] w-full rounded-2xl border border-slate-300 p-4"
   />
 )}
 
 </div>
-      <div className="mt-5 grid grid-cols-3 gap-2 md:flex md:flex-wrap">
-        <button onClick={goBack} className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold text-[#061B3A]"
-          >
-          Back
-        </button>
+      <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <button
+  onClick={goBack}
+  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold text-[#061B3A]"
+>
+  Back
+</button>
+
+       <button
+  onClick={toggleDoubt}
+  className="w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 font-bold text-amber-700"
+>
+  {doubt[current] ? "Batal Ragu-ragu" : "Ragu-ragu"}
+</button>
 
         <button
-          onClick={toggleDoubt}
-          className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 font-bold text-amber-700"
-        >
-          {doubt[current] ? "Batal Ragu-ragu" : "Ragu-ragu"}
-        </button>
-
-        <button onClick={goNext} className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold text-[#061B3A]"
-          >
-          Next
-        </button>
+  onClick={goNext}
+  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold text-[#061B3A]"
+>
+  Next
+</button>
       </div>
     </div>
-  </div>
 
+
+ 
   {/* Sidebar Nomor Soal */}
-  {/* Sidebar Nomor Soal */}
-<aside className="w-full lg:w-64 h-[calc(100vh-210px)] flex flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+<aside
+className="
+w-full
+lg:w-64
+lg:h-[calc(100vh-210px)]
+flex
+flex-col
+rounded-3xl
+border
+border-slate-100
+bg-white
+p-5
+shadow-sm
+"
+>
   <h3 className="mb-4 text-lg font-extrabold text-[#061B3A]">
     Nomor Soal
   </h3>
 
   {/* Scroll Area */}
   <div
-  ref={numberScrollRef}
-  className="flex-1 overflow-y-auto pr-2"
+ref={numberScrollRef}
+className="
+max-h-40
+overflow-y-auto
+lg:flex-1
+lg:max-h-none
+pr-2
+"
 >
-    <div className="grid grid-cols-6 md:grid-cols-5 gap-2">
+    <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-5 gap-2">
       {questions.map((_, index) => {
         const answered =
   questions[index].essayAnswer != null
