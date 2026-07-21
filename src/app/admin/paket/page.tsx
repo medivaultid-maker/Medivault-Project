@@ -1,6 +1,6 @@
 "use client";
 import { supabase } from "../../lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "../../components/Navbar";
 import {
   DndContext,
@@ -22,11 +22,12 @@ import { CSS } from "@dnd-kit/utilities";
 
 type QuestionItem = {
   id: string;
+   topic: string;
   question: string;
   image?: string;
   options?: string[];
   answer?: number;
-  essayAnswer?: string;
+  essayAnswer?: string[];
   discussion: string;
   discussionImage?: string;
 };
@@ -102,15 +103,17 @@ const sensors = useSensors(
 
   const [questions, setQuestions] = useState<QuestionItem[]>([
   {
-    id: crypto.randomUUID(),
-    question: "",
+  id: crypto.randomUUID(),
+  topic: "",
+
+  question: "",
     options: isPraktikum ? undefined : ["", "", "", "", ""],
     answer: isPraktikum ? undefined : 0,
-    essayAnswer: "",
+    essayAnswer: [""],
     discussion: "",
   },
 ]);
-
+const answerRefs = useRef<HTMLInputElement[]>([]);
   const inputClass =
     "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50";
 
@@ -278,6 +281,8 @@ const sensors = useSensors(
 
     return {
   id: crypto.randomUUID(),
+  topic: "",
+
   question: questionLines.join("\n").trim(),
   options: optionMap,
   answer: answerIndex,
@@ -312,6 +317,12 @@ console.log("JUMLAH =", parsed.length);
     setQuestions(copy);
   };
 
+  const updateTopic = (i: number, val: string) => {
+  const copy = [...questions];
+  copy[i].topic = val;
+  setQuestions(copy);
+};
+
   const updateOption = (qi: number, oi: number, val: string) => {
     const copy = [...questions];
     copy[qi].options[oi] = val;
@@ -330,11 +341,41 @@ console.log("JUMLAH =", parsed.length);
     setQuestions(copy);
   };
   const updateEssayAnswer = (
-  i: number,
-  val: string
+  questionIndex: number,
+  answerIndex: number,
+  value: string
 ) => {
   const copy = [...questions];
-  copy[i].essayAnswer = val;
+
+  copy[questionIndex].essayAnswer![answerIndex] = value;
+
+  setQuestions(copy);
+};
+
+const addEssayAnswer = (questionIndex: number) => {
+  const copy = [...questions];
+
+  if (!copy[questionIndex].essayAnswer) {
+    copy[questionIndex].essayAnswer = [];
+  }
+
+  copy[questionIndex].essayAnswer!.push("");
+
+  setQuestions(copy);
+};
+
+const deleteEssayAnswer = (
+  questionIndex: number,
+  answerIndex: number
+) => {
+  const copy = [...questions];
+
+  copy[questionIndex].essayAnswer!.splice(answerIndex, 1);
+
+  if (copy[questionIndex].essayAnswer!.length === 0) {
+    copy[questionIndex].essayAnswer!.push("");
+  }
+
   setQuestions(copy);
 };
 
@@ -343,10 +384,12 @@ console.log("JUMLAH =", parsed.length);
     ...questions,
     {
       id: crypto.randomUUID(),
+      topic: "",
+      
       question: "",
       options: isPraktikum ? undefined : ["", "", "", "", ""],
       answer: isPraktikum ? undefined : 0,
-      essayAnswer: "",
+      essayAnswer: [""],
       discussion: "",
     },
   ]);
@@ -427,6 +470,7 @@ console.log("JUMLAH =", parsed.length);
   // 2. Simpan semua soal
   const soalRows = questions.map((q) => ({
     package_id: paket.id,
+    topic: q.topic || null,
 
     question: q.question,
     image: q.image || null,
@@ -434,7 +478,8 @@ console.log("JUMLAH =", parsed.length);
     options: q.options || null,
     answer: q.answer ?? null,
 
-    essay_answer: q.essayAnswer || null,
+    essay_answer:
+  q.essayAnswer?.filter((v) => v.trim() !== "") || [],
 
     discussion: q.discussion || "",
     discussion_image: q.discussionImage || null,
@@ -812,6 +857,17 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
       </h3>
     </div>
 
+    <label className="mb-2 block font-semibold text-slate-700">
+  Topik
+</label>
+
+<input
+  className={`${inputClass} mb-4`}
+  placeholder="Contoh: Thorax, Abdomen, Upper Limb, Epitel, dll"
+  value={q.topic}
+  onChange={(e) => updateTopic(i, e.target.value)}
+/>
+
     <label className="font-semibold text-slate-700">
       Tulis Soal
     </label>
@@ -908,15 +964,93 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
       </>
     ) : (
       <>
-        <label className="mb-2 block text-sm font-semibold text-slate-700">
-          Jawaban Praktikum
-        </label>
+        <>
+  <div className="flex items-center justify-between">
+  <label className="text-sm font-semibold text-slate-700">
+    Kata Kunci Jawaban Benar
+  </label>
 
-        <textarea
-          className={textareaClass}
-          value={q.essayAnswer || ""}
-          onChange={(e) => updateEssayAnswer(i, e.target.value)}
-        />
+  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+    {q.essayAnswer?.length || 0} Jawaban
+  </span>
+</div>
+
+  <p className="mb-3 text-xs text-slate-500">
+    Satu baris = satu jawaban yang dianggap benar.
+  </p>
+
+<div className="mt-3 rounded-xl bg-blue-50 p-3 text-xs leading-6 text-blue-700">
+Misalnya:
+<br />
+• Deltoideus
+<br />
+• M. Deltoideus
+<br />
+• Musculus Deltoideus
+</div>
+
+  {(q.essayAnswer || [""]).map((item, idx) => (
+  <div key={idx} className="mb-3 flex items-center gap-3">
+
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
+      {idx + 1}
+    </div>
+
+    <input
+  ref={(el) => {
+    if (el) answerRefs.current[idx] = el;
+  }}
+  className={`${inputClass} flex-1`}
+  placeholder={`Jawaban ${idx + 1}`}
+  value={item}
+  onChange={(e) => {
+    const copy = [...questions];
+    copy[i].essayAnswer![idx] = e.target.value;
+    setQuestions(copy);
+  }}
+/>
+
+    <button
+      type="button"
+      onClick={() => {
+  const copy = [...questions];
+  copy[i].essayAnswer = [
+    ...(copy[i].essayAnswer || []),
+    "",
+  ];
+
+  setQuestions(copy);
+
+  setTimeout(() => {
+    answerRefs.current[
+      copy[i].essayAnswer!.length - 1
+    ]?.focus();
+  }, 0);
+}}
+      className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-xl font-bold text-red-600 hover:bg-red-100"
+    >
+      ×
+    </button>
+
+  </div>
+))}
+
+  <button
+    type="button"
+    onClick={() => {
+      const copy = [...questions];
+
+      copy[i].essayAnswer = [
+ ...(copy[i].essayAnswer || []),
+ ""
+];
+      setQuestions(copy);
+    }}
+    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50 py-3 font-bold text-emerald-700 hover:bg-emerald-100"
+  >
+    + Tambah Jawaban Benar
+  </button>
+</>
       </>
     )}
   </div>

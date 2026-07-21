@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import { supabase } from "../lib/supabase";
+import {
+  isEssayCorrect,
+  getEssayFeedback,
+} from "../lib/essayMatcher";
 
 type ExamResult = {
   id: string;

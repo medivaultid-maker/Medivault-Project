@@ -187,7 +187,7 @@ return (
   <main className="min-h-screen bg-slate-50 overflow-x-hidden">
       <Navbar />
 
-      <section className="px-6 py-10 md:px-10">
+      <section className="px-4 py-6 md:px-10 md:py-10">
 
         {/* HEADER */}
         <div className="mx-auto mt-8 max-w-7xl text-center">
@@ -202,12 +202,12 @@ return (
         
         </div>
         <hr className="mx-auto mt-8 mb-10 max-w-7xl border-slate-200" />
-<div className="mx-auto w-full max-w-7xl grid items-start gap-6 lg:grid-cols-[340px_1fr]">
+<div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
   {/* KOLOM KIRI */}
   <div className="space-y-6">
 
     {/* TOKEN */}
-    <div className="rounded-3xl border bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border bg-white p-4 md:p-6 shadow-sm">
       <p className="text-sm text-slate-500">
         Jumlah Akses
       </p>
@@ -218,7 +218,7 @@ return (
     </div>
 
     {/* DAFTAR PAKET */}
-    <div className="rounded-3xl border bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border bg-white p-4 md:p-6 shadow-sm">
 
       <h2 className="mb-5 text-xl font-bold text-[#061B3A]">
         Paket Latihan
@@ -231,7 +231,7 @@ return (
   key={item.id}
   className="w-full rounded-2xl border p-4"
 >
-            <h3 className="font-bold text-lg">
+            <h3 className="text-base md:text-lg font-bold break-words">
               {item.title}
             </h3>
 
@@ -265,13 +265,13 @@ return (
   {/* KOLOM KANAN */}
     
         {/* HISTORY */}
-        <div className="w-full mt-0">
+        <div className="mt-0 w-full min-w-0">
 
       
 
           {/* ================= CHART ================= */}
           {chartData.length > 0 && (
-  <div className="rounded-3xl border bg-white p-6 shadow-sm">
+  <div className="overflow-hidden rounded-2xl md:rounded-3xl border bg-white p-4 md:p-6 shadow-sm">
 
               <h2 className="mb-6 text-2xl font-bold text-[#061B3A]">
   Riwayat Latihan
@@ -281,9 +281,18 @@ return (
   Perkembangan Hasil Latihan
 </h3>
 
-              <div className="h-[240px] md:h-[300px] w-full">
+              <div className="w-full overflow-hidden">
+  <div className="h-[200px] sm:h-[240px] md:h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
+                  <LineChart
+  data={chartData}
+  margin={{
+    top: 10,
+    right: 20,
+    left: 0,
+    bottom: 0,
+  }}
+>
                     
                     <CartesianGrid strokeDasharray="4" stroke="#e2e8f0" />
 
@@ -328,8 +337,10 @@ return (
 
                   </LineChart>
                 </ResponsiveContainer>
+                  </div>
+</div>
               </div>
-            </div>
+            
           )}
 
           {/* ================= TABLE ================= */}
@@ -339,14 +350,14 @@ return (
       Belum ada riwayat latihan pada kategori ini.
     </p>
 
-    <p className="mt-2 text-sm text-slate-500">
+    <p className="mt-2 flex flex-wrap gap-1 text-sm text-slate-500">
       Mulai latihan pertamamu untuk melihat perkembangan skor dan hasil belajar.
     </p>
   </div>
 ) : (
-  <div className="mt-6 overflow-hidden rounded-3xl border bg-white shadow-sm">
+  <div className="hidden md:block mt-6 overflow-x-auto rounded-3xl border bg-white shadow-sm">
 
-  <table className="w-full table-fixed">
+  <table className="min-w-[850px] w-full">
 
     <colgroup>
       <col className="w-16" />
@@ -439,6 +450,7 @@ return (
   </table>
 
           </div>
+          
 )}
 </div> {/* wrapper history */}
 

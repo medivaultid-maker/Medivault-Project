@@ -30,6 +30,9 @@ export default function AdminPage() {
   const [packages, setPackages] = useState<ExamPackage[]>([]);
 const [userCount, setUserCount] = useState(0);
 const [questionCount, setQuestionCount] = useState(0);
+const [averageScore, setAverageScore] = useState(0);
+const [hardestQuestion, setHardestQuestion] = useState<any>(null);
+const [wrongTopic, setWrongTopic] = useState<any>(null);
 
   useEffect(() => {
   const loadDashboard = async () => {
@@ -99,6 +102,117 @@ const [questionCount, setQuestionCount] = useState(0);
           }))
         );
       }
+
+      // =====================
+// ANALYTICS NILAI
+// =====================
+
+const { data: attempts } = await supabase
+.from("exam_attempts")
+.select("score");
+
+
+if(attempts && attempts.length > 0){
+
+const avg =
+Math.round(
+attempts.reduce(
+(total,item)=> total + item.score,
+0
+)
+/ attempts.length
+);
+
+
+setAverageScore(avg);
+
+}
+
+
+// =====================
+// SOAL TERSULIT
+// =====================
+
+
+const { data: wrongAnswers } = await supabase
+.from("attempt_answers")
+.select(`
+question_id,
+is_correct
+`)
+.eq("is_correct", false);
+
+
+
+if(wrongAnswers){
+
+const counter:any = {};
+
+
+wrongAnswers.forEach(item=>{
+
+counter[item.question_id] =
+(counter[item.question_id] || 0) + 1;
+
+});
+
+
+const hardest =
+Object.entries(counter)
+.sort(
+(a:any,b:any)=>b[1]-a[1]
+)[0];
+
+
+if(hardest){
+
+setHardestQuestion({
+id: hardest[0],
+wrong: hardest[1]
+});
+
+}
+
+}
+
+// =====================
+// TOPIK PALING BANYAK SALAH
+// =====================
+
+const { data: wrongTopics } = await supabase
+  .from("attempt_answers")
+  .select(`
+    question_id,
+    questions (
+      topic
+    )
+  `)
+  .eq("is_correct", false);
+console.log(wrongTopics);
+
+if (wrongTopics) {
+  const topicCounter: any = {};
+
+  wrongTopics.forEach((item: any) => {
+    const topic = item.questions?.topic;
+
+    if (!topic) return;
+
+    topicCounter[topic] =
+      (topicCounter[topic] || 0) + 1;
+  });
+
+  const topTopic = Object.entries(topicCounter).sort(
+    (a: any, b: any) => b[1] - a[1]
+  )[0];
+
+  if (topTopic) {
+    setWrongTopic({
+      name: topTopic[0],
+      total: topTopic[1],
+    });
+  }
+}
 
       setCheckingAccess(false);
 
@@ -189,7 +303,7 @@ to-[#234F42] px-6 py-10 text-white md:px-10">
 
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-4">
+          <div className="mt-8 grid gap-4 md:grid-cols-7">
             <div className="rounded-3xl border border-white/10 bg-white/8
 backdrop-blur-xl p-5 backdrop-blur">
               <p className="text-xs font-semibold text-[#DDEDE7]">
@@ -218,6 +332,56 @@ backdrop-blur-xl p-5 backdrop-blur">
               <h2 className="mt-3 text-4xl font-poppins font-extrabold">{averageDuration}m</h2>
               <p className="mt-2 text-xs text-blue-100">Menit</p>
             </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+  <p className="text-xs font-semibold text-blue-100">
+    Rata-rata Nilai
+  </p>
+
+  <h2 className="mt-3 text-4xl font-poppins font-extrabold">
+    {averageScore}
+  </h2>
+
+  <p className="mt-2 text-xs text-blue-100">
+    Semua ujian
+  </p>
+</div>
+
+<div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+  <p className="text-xs font-semibold text-blue-100">
+    Soal Tersulit
+  </p>
+
+  <h2 className="mt-3 text-2xl font-poppins font-extrabold">
+  {hardestQuestion
+    ? `#${hardestQuestion.id}`
+    : "-"}
+</h2>
+
+<p className="mt-2 text-xs text-blue-100">
+  {hardestQuestion
+    ? `${hardestQuestion.wrong}x jawaban salah`
+    : "Belum ada data"}
+</p>
+</div>
+
+<div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+
+  <p className="text-xs font-semibold text-blue-100">
+    Topik Tersulit
+  </p>
+
+  <h2 className="mt-3 text-xl font-poppins font-extrabold">
+    {wrongTopic?.name || "-"}
+  </h2>
+
+  <p className="mt-2 text-xs text-blue-100">
+    {wrongTopic
+      ? `${wrongTopic.total} jawaban salah`
+      : "Belum ada data"}
+  </p>
+
+</div>
           </div>
         </div>
       </section>

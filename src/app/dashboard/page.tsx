@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import { supabase } from "../lib/supabase";
+import { generateAIReport } from "../lib/aiLearningReport";
+import { generateRecommendation } from "../lib/studyRecommendation";
+import { generateAchievements } from "../lib/achievement";
 
 type ExamHistoryItem = {
   id: string;
@@ -35,6 +38,9 @@ export default function DashboardPage() {
   const [name, setName] = useState("User");
   const [token, setToken] = useState(0);
   const [history, setHistory] = useState<ExamHistoryItem[]>([]);
+  const [aiReport, setAiReport] = useState<any>(null);
+const [recommendation, setRecommendation] = useState<any>(null);
+const [achievements, setAchievements] = useState<any[]>([]);
 
   useEffect(() => {
   const loadDashboard = async () => {
@@ -110,6 +116,48 @@ export default function DashboardPage() {
       );
     }
 
+    if(attempts){
+
+ const badge =
+ generateAchievements(
+   attempts.map((item:any)=>({
+     score:item.score
+   }))
+ );
+
+ setAchievements(badge);
+
+}
+
+    // ======================
+// AI LEARNING REPORT
+// ======================
+
+if (attempts && attempts.length > 0) {
+
+  const latest = attempts[0];
+
+  if (latest.topic_stats) {
+
+   const report =
+  generateAIReport(
+    latest.topic_stats
+  );
+
+setAiReport(report);
+ const rec =
+      generateRecommendation(
+        report.weakest
+      );
+
+    setRecommendation(rec);
+
+
+
+  }
+
+}
+
     setCheckingAccess(false);
   };
 
@@ -161,6 +209,226 @@ export default function DashboardPage() {
               Pantau perkembangan belajar dan riwayat latihan dalam satu dashboard.
             </p>
           </div>
+
+          {/* AI DASHBOARD */}
+
+{aiReport && (
+
+<div className="mb-10 rounded-3xl border border-indigo-100 bg-indigo-50 p-6 shadow-sm">
+
+
+<h2 className="text-2xl font-extrabold text-[#061B3A]">
+🤖 AI Learning Dashboard
+</h2>
+
+
+<p className="mt-2 text-slate-600">
+Analisis kemampuan berdasarkan latihan terakhir kamu.
+</p>
+
+
+
+<div className="mt-6 grid gap-4 md:grid-cols-2">
+
+
+<div className="rounded-2xl bg-white p-5">
+
+<h3 className="font-extrabold text-emerald-600">
+💪 Topik Terkuat
+</h3>
+
+
+{aiReport.strongest.map(
+(item:any)=>(
+<div
+key={item.topic}
+className="mt-3 rounded-xl bg-emerald-50 p-3"
+>
+
+<p className="font-bold text-[#061B3A]">
+{item.topic}
+</p>
+
+<p>
+Kemampuan {item.score}%
+</p>
+
+</div>
+)
+)}
+
+</div>
+
+
+
+<div className="rounded-2xl bg-white p-5">
+
+<h3 className="font-extrabold text-red-600">
+📚 Perlu Review
+</h3>
+
+
+{aiReport.weakest.map(
+(item:any)=>(
+<div
+key={item.topic}
+className="mt-3 rounded-xl bg-red-50 p-3"
+>
+
+<p className="font-bold text-[#061B3A]">
+{item.topic}
+</p>
+
+<p>
+Kemampuan {item.score}%
+</p>
+
+</div>
+)
+)}
+
+</div>
+
+
+</div>
+
+
+</div>
+
+)}
+
+{/* ACHIEVEMENT BADGE */}
+
+{achievements.length > 0 && (
+
+<div className="mb-10 rounded-3xl border border-yellow-100 bg-yellow-50 p-6">
+
+
+<h2 className="text-2xl font-extrabold text-[#061B3A]">
+🏆 Achievement
+</h2>
+
+
+<p className="mt-2 text-slate-600">
+Badge yang berhasil kamu kumpulkan.
+</p>
+
+
+<div className="mt-5 grid gap-4 md:grid-cols-3">
+
+
+{achievements.map((badge,index)=>(
+
+<div
+key={index}
+className="rounded-2xl bg-white p-5 shadow-sm"
+>
+
+
+<div className="text-4xl">
+{badge.icon}
+</div>
+
+
+<h3 className="mt-3 font-extrabold text-[#061B3A]">
+{badge.title}
+</h3>
+
+
+<p className="mt-1 text-sm text-slate-600">
+{badge.description}
+</p>
+
+
+</div>
+
+))}
+
+
+</div>
+
+
+</div>
+
+)}
+
+{/* AI STUDY RECOMMENDATION */}
+
+{recommendation && (
+
+<div className="mb-10 rounded-3xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
+
+
+<h2 className="text-2xl font-extrabold text-[#061B3A]">
+📚 Rekomendasi Belajar AI
+</h2>
+
+
+<p className="mt-2 text-slate-600">
+Materi yang disarankan berdasarkan hasil latihan terakhir.
+</p>
+
+
+<div className="mt-5 space-y-3">
+
+
+{recommendation.map((item:any,index:number)=>(
+
+<div
+key={index}
+className="rounded-2xl bg-white p-4 shadow-sm"
+>
+
+<p className="font-extrabold text-[#061B3A]">
+{item.topic}
+</p>
+
+
+<p className="mt-1 text-slate-600">
+Kemampuan saat ini: {item.score}%
+</p>
+
+
+<div className="mt-3">
+
+<p className="font-bold text-[#061B3A]">
+Materi yang disarankan:
+</p>
+
+
+<ul className="mt-2 list-disc pl-5 text-slate-600">
+
+{item.materials.map((m:string,index:number)=>(
+
+<li key={index}>
+{m}
+</li>
+
+))}
+
+</ul>
+
+</div>
+
+<Link
+href={`/materi/${item.topic}`}
+className="mt-3 inline-block font-bold text-emerald-600"
+>
+Pelajari materi →
+</Link>
+
+
+</div>
+
+))}
+
+
+</div>
+
+
+</div>
+
+)}
 
           {/* STATS */}
           <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">

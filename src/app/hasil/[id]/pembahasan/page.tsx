@@ -5,9 +5,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Navbar from "../../../components/Navbar";
 import { supabase } from "../../../lib/supabase";
+import {
+  isEssayCorrect,
+  getEssayScore,
+  getHighlightExplanation,
+  buildAIExplanation,
+} from "../../../lib/essayMatcher";
 
 type QuestionItem = {
   id: string;
+  topic: string;
   question: string;
   image: string | null;
   options: string[];
@@ -17,9 +24,9 @@ type QuestionItem = {
   discussion_image: string | null;
 
   attempt_answers: {
-    selected_answer: number | null;
-    is_doubt: boolean;
-  }[];
+  selected_answer: string | number | null;
+  is_doubt: boolean;
+}[];
 };
 
 type ExamAttempt = {
@@ -180,7 +187,14 @@ setCheckingAccess(false);
 question.attempt_answers?.[0]?.selected_answer ?? null;
 
     const isCorrect =
-      userAnswer === question.answer;
+  question.essay_answer
+    ? isEssayCorrect(
+        String(userAnswer ?? ""),
+        Array.isArray(question.essay_answer)
+          ? question.essay_answer
+          : [question.essay_answer]
+      )
+    : userAnswer === question.answer;
 
     const isDoubt =
 question.attempt_answers[0]?.is_doubt ?? false;
@@ -256,6 +270,25 @@ question.attempt_answers[0]?.is_doubt ?? false;
             {filteredQuestions.map((item) => {
               const question = item.question;
               const userAnswer = item.userAnswer;
+              const essayAnalysis =
+  question.essay_answer
+    ? getEssayScore(
+        String(userAnswer ?? ""),
+        Array.isArray(question.essay_answer)
+          ? question.essay_answer
+          : [question.essay_answer]
+      )
+    : null;
+              
+              const ai =
+  question.essay_answer
+    ? buildAIExplanation(
+        String(userAnswer ?? ""),
+        Array.isArray(question.essay_answer)
+          ? question.essay_answer
+          : [question.essay_answer]
+      )
+    : null;
 
               return (
                 <div
@@ -351,6 +384,160 @@ question.attempt_answers[0]?.is_doubt ?? false;
         {question.discussion}
       </p>
     )}
+
+    {essayAnalysis && (
+<div className="mt-5 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+
+<h3 className="font-extrabold text-indigo-700">
+🤖 AI Highlight Jawaban
+</h3>
+
+
+<div className="mt-4 space-y-3">
+
+{essayAnalysis.matched.length > 0 && (
+<div>
+<p className="font-bold text-emerald-600">
+✅ Bagian benar
+</p>
+
+{essayAnalysis.matched.map((item)=>(
+<p key={item}>
+🟢 {item}
+</p>
+))}
+</div>
+)}
+
+
+
+{essayAnalysis.missing.length > 0 && (
+<div>
+<p className="font-bold text-red-600">
+❌ Bagian kurang
+</p>
+
+{essayAnalysis.missing.map((item)=>(
+<p key={item}>
+🔴 {item}
+</p>
+))}
+</div>
+)}
+
+
+
+{essayAnalysis.wrong.length > 0 && (
+<div>
+<p className="font-bold text-amber-600">
+⚠ Bagian tidak sesuai
+</p>
+
+{essayAnalysis.wrong.map((item)=>(
+<p key={item}>
+🟠 {item}
+</p>
+))}
+</div>
+)}
+
+</div>
+
+</div>
+)}
+
+    {ai && (
+  <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+    <p className="font-bold text-blue-700">
+      🤖 MediVault AI
+    </p>
+
+    <div className="mt-3 whitespace-pre-wrap text-slate-700 leading-7">
+  {ai.text}
+</div>
+{/* AI HIGHLIGHT */}
+
+<div className="mt-5 space-y-3">
+
+  {ai.highlight.correct.length > 0 && (
+    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+
+      <p className="font-bold text-emerald-700">
+        ✅ Struktur yang benar
+      </p>
+
+      {ai.highlight.correct.map((item:any, index:number)=>(
+        <div key={index} className="mt-2">
+
+          <p className="font-bold">
+            {item.text}
+          </p>
+
+          <p className="text-sm text-slate-600">
+            {item.explanation}
+          </p>
+
+        </div>
+      ))}
+
+    </div>
+  )}
+
+
+
+  {ai.highlight.missing.length > 0 && (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+
+      <p className="font-bold text-amber-700">
+        ⚠️ Struktur yang belum disebutkan
+      </p>
+
+      {ai.highlight.missing.map((item:any,index:number)=>(
+        <div key={index} className="mt-2">
+
+          <p className="font-bold">
+            {item.text}
+          </p>
+
+          <p className="text-sm text-slate-600">
+            {item.explanation}
+          </p>
+
+        </div>
+      ))}
+
+    </div>
+  )}
+
+
+
+  {ai.highlight.wrong.length > 0 && (
+    <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+
+      <p className="font-bold text-red-700">
+        ❌ Struktur tidak sesuai
+      </p>
+
+      {ai.highlight.wrong.map((item:any,index:number)=>(
+        <div key={index} className="mt-2">
+
+          <p className="font-bold">
+            {item.text}
+          </p>
+
+          <p className="text-sm text-slate-600">
+            {item.explanation}
+          </p>
+
+        </div>
+      ))}
+
+    </div>
+  )}
+
+</div>
+  </div>
+)}
 
     {question.discussion_image && (
       <img

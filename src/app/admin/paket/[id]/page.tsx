@@ -30,6 +30,8 @@ type QuestionItem = {
   essayAnswer?: string;
   discussion: string;
   discussionImage?: string;
+
+  topic?: string;
 };
 
 const categories = [
@@ -185,7 +187,7 @@ useEffect(() => {
         image: q.image,
         options: q.options,
         answer: q.answer,
-        essayAnswer: q.essay_answer,
+        essayAnswer: q.essay_answer || [""],
         discussion: q.discussion,
         discussionImage: q.discussion_image,
       }))

@@ -5,6 +5,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../lib/supabase";
+import {
+  isEssayCorrect,
+  getEssayFeedback,
+} from "../../lib/essayMatcher";
+
+import {
+  generateAIReport
+} from "../../lib/aiLearningReport";
 
 type ExamAttempt = {
   id: string;
@@ -15,6 +23,13 @@ type ExamAttempt = {
   wrong_count: number;
   unanswered_count: number;
   doubt_count: number;
+  topic_stats: Record<
+  string,
+  {
+    total: number;
+    correct: number;
+  }
+>;
   total_questions: number;
   duration: number;
   status: string;
@@ -114,7 +129,8 @@ setCheckingAccess(false);
   }
 
   if (!result) {
-    return (
+
+return (
       <main>
         <Navbar />
         <section className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
@@ -136,6 +152,11 @@ setCheckingAccess(false);
       </main>
     );
   }
+
+  const aiReport =
+  result.topic_stats
+    ? generateAIReport(result.topic_stats)
+    : null;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#EEF2FF]">
@@ -203,6 +224,8 @@ setCheckingAccess(false);
                 </p>
               </div>
 
+              
+
               <Link
                 href={`/hasil/${result.id}/pembahasan`}
                 className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white shadow hover:scale-105 transition"
@@ -212,6 +235,107 @@ setCheckingAccess(false);
             </div>
           </div>
         </div>
+
+        {aiReport && (
+<div className="
+mt-6 rounded-2xl
+border border-indigo-200
+bg-indigo-50
+p-6
+shadow-lg
+">
+
+<h2 className="
+text-xl
+font-extrabold
+text-[#061B3A]
+">
+🤖 AI Learning Report
+</h2>
+
+
+<div className="mt-5">
+
+<p className="font-bold text-emerald-600">
+💪 Topik Terkuat
+</p>
+
+{aiReport.strongest.map(item=>(
+<p key={item.topic}>
+✅ {item.topic} ({item.score}%)
+</p>
+))}
+
+</div>
+
+
+<div className="mt-5">
+
+<p className="font-bold text-red-600">
+📚 Perlu Dipelajari
+</p>
+
+{aiReport.weakest.map(item=>(
+<p key={item.topic}>
+⚠️ {item.topic} ({item.score}%)
+</p>
+))}
+
+</div>
+
+
+</div>
+)}
+
+        {/* ANALISIS KEMAMPUAN */}
+{result.topic_stats &&
+  Object.keys(result.topic_stats).length > 0 && (
+    <div className="mt-6 rounded-2xl border border-white/40 bg-white/70 backdrop-blur-xl p-6 shadow-lg">
+
+      <h2 className="mb-5 text-xl font-extrabold text-[#061B3A]">
+        📊 Analisis Kemampuan
+      </h2>
+
+      <div className="space-y-5">
+        {Object.entries(result.topic_stats).map(
+          ([topic, stat]) => {
+            const percent = Math.round(
+              (stat.correct / stat.total) * 100
+            );
+
+            return (
+              <div key={topic}>
+                <div className="mb-2 flex justify-between">
+                  <span className="font-bold text-[#061B3A]">
+                    {topic}
+                  </span>
+
+                  <span className="font-bold">
+                    {percent}%
+                  </span>
+                </div>
+
+                <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      percent >= 80
+                        ? "bg-emerald-500"
+                        : percent >= 60
+                        ? "bg-yellow-400"
+                        : "bg-red-500"
+                    }`}
+                    style={{
+                      width: `${percent}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          }
+        )}
+      </div>
+    </div>
+)}
       </section>
     </main>
   );

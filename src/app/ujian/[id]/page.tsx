@@ -4,9 +4,16 @@ import { useEffect, useState, useRef } from "react";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../lib/supabase";
 import { useParams, useSearchParams } from "next/navigation";
+import {
+  isEssayCorrect,
+  getEssayScore,
+} from "../../lib/essayMatcher";
 
 type QuestionItem = {
   id: string;
+
+  topic?: string;
+
   question: string;
 
   image?: string | null;
@@ -15,7 +22,7 @@ type QuestionItem = {
 
   answer?: number | null;
 
-  essayAnswer?: string | null;
+  essayAnswer?: string[];
 
   discussion: string;
 
@@ -92,7 +99,7 @@ const [examResult, setExamResult] = useState({
 const numberScrollRef = useRef<HTMLDivElement>(null);
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
-const isEssay = question?.essayAnswer !== null;
+const isEssay = question?.essayAnswer != null;
 
   useEffect(() => {
   const loadExam = async () => {
@@ -198,20 +205,20 @@ const parsedPackage: ExamPackage = {
   pdfName: "",
   status: "published",
  questions: questions.map((q: any) => ({
-  
   id: q.id,
   question: q.question,
+  topic: q.topic,
 
   image: q.image,
-
   options: q.options,
-
   answer: q.answer,
 
-  essayAnswer: q.essay_answer,
+  essayAnswer:
+  Array.isArray(q.essay_answer)
+    ? q.essay_answer
+    : [""],
 
   discussion: q.discussion,
-
   discussionImage: q.discussion_image,
 })),
 };
@@ -257,10 +264,35 @@ if (savedAnswerRows) {
     }
   });
 }
+const initialEssayAnswers = Array(
+  parsedPackage.questions.length
+).fill("");
+
+if (savedAnswerRows) {
+  savedAnswerRows.forEach((row: any) => {
+
+    const index = parsedPackage.questions.findIndex(
+      (q) => q.id === row.question_id
+    );
+
+    if (index !== -1) {
+
+      if (
+        parsedPackage.questions[index].essayAnswer
+      ) {
+        initialEssayAnswers[index] =
+          row.selected_answer || "";
+      }
+
+    }
+
+  });
+}
 setSelectedPackage(parsedPackage);
 setCurrent(savedCurrent ? Number(savedCurrent) : 0);
 setAnswers(initialAnswers);
 setDoubt(initialDoubt);
+setEssayAnswers(initialEssayAnswers);
 console.log("SESSION =", session);
 console.log("PACKAGE DURATION =", packageData.duration);
 const startedAt = new Date(session.started_at).getTime();
@@ -378,9 +410,12 @@ async function saveAnswer(
         selected_answer: answer,
 
         is_correct:
-          currentQuestion.essayAnswer
-            ? null
-            : answer === currentQuestion.answer,
+currentQuestion.essayAnswer
+  ? isEssayCorrect(
+      String(answer),
+      currentQuestion.essayAnswer
+    )
+  : answer === currentQuestion.answer,
 
         is_doubt: doubt[current],
       },
@@ -395,6 +430,7 @@ async function saveAnswer(
 }
 // =============================
 
+
 const formatTime = (seconds: number) => {
     const minute = Math.floor(seconds / 60);
     const second = seconds % 60;
@@ -408,7 +444,10 @@ const formatTime = (seconds: number) => {
   const chooseAnswer = async (optionIndex: number) => {
   const copy = [...answers];
   copy[current] = optionIndex;
+
   setAnswers(copy);
+
+  console.log("SET ANSWERS =", copy);
 
   await saveAnswer(
     selectedPackage!.questions[current].id,
@@ -472,24 +511,80 @@ setSubmitted(true);
 
   const totalQuestions = selectedPackage.questions.length;
 
-  const correctCount = answers.reduce((total, answer, index) => {
-    return answer === selectedPackage.questions[index]?.answer
-      ? total + 1
-      : total;
-  }, 0);
+let correctCount = 0;
+let wrongCount = 0;
+const topicStats: Record<
+  string,
+  {
+    total: number;
+    correct: number;
+  }
+> = {};
+let unansweredCount = 0;
 
-  const unansweredCount = answers.filter((answer) => answer === null).length;
 
-  const wrongCount = answers.reduce((total, answer, index) => {
-    if (answer === null) return total;
-    return answer !== selectedPackage.questions[index]?.answer
-      ? total + 1
-      : total;
-  }, 0);
 
-  const doubtCount = doubt.filter((item) => item === true).length;
+selectedPackage.questions.forEach((q, index) => {
+const topic = q.topic || "Lainnya";
 
-  const finalScore = Math.round((correctCount / totalQuestions) * 100);
+if (!topicStats[topic]) {
+  topicStats[topic] = {
+    total: 0,
+    correct: 0,
+  };
+}
+
+topicStats[topic].total++;
+
+  if (q.essayAnswer != null) {
+
+    const userEssay = (essayAnswers[index] || "").trim();
+
+    if (userEssay === "") {
+      unansweredCount++;
+    } else {
+
+      const result = getEssayScore(
+  userEssay,
+  q.essayAnswer
+);
+
+// skor parsial
+correctCount += result.score;
+
+// salah = bagian yang tidak didapat
+correctCount += result.score;
+
+wrongCount += 1 - result.score;
+
+if(result.score >= 0.85){
+  topicStats[topic].correct++;
+}
+
+    }
+
+    return;
+  }
+
+  // pilihan ganda
+  const answer = answers[index];
+
+  if (answer == null) {
+    unansweredCount++;
+  } else if (answer === q.answer) {
+    correctCount++;
+topicStats[topic].correct++;
+  } else {
+    wrongCount++;
+  }
+
+});
+
+const doubtCount = doubt.filter(Boolean).length;
+
+const finalScore = Math.round(
+  (correctCount / totalQuestions) * 100
+);
   
 
   const savedAttemptId = localStorage.getItem("medivault_attempt_id");
@@ -529,6 +624,7 @@ const { error: attemptError } = await supabase
     doubt_count: doubtCount,
     total_questions: totalQuestions,
     duration: selectedPackage.duration,
+    topic_stats: topicStats,
     status: finalScore >= 70 ? "Lulus" : "Belum Lulus",
   })
   .eq("id", currentAttemptId);
@@ -671,7 +767,7 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
     value
   );
 }}
-    placeholder="Ketik jawaban Anda..."
+    placeholder="Masukkan nama struktur anatomi..."
     className="min-h-[150px] w-full rounded-2xl border border-slate-300 p-4"
   />
 )}
@@ -712,7 +808,10 @@ localStorage.removeItem(`exam-doubt-${selectedPackage.id}`);
 >
     <div className="grid grid-cols-6 md:grid-cols-5 gap-2">
       {questions.map((_, index) => {
-        const answered = answers[index] !== null;
+        const answered =
+  questions[index].essayAnswer != null
+    ? (essayAnswers[index] ?? "").trim() !== ""
+    : answers[index] != null;
         const isDoubt = doubt[index];
         const active = current === index;
 
