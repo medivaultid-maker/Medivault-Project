@@ -99,7 +99,9 @@ const [examResult, setExamResult] = useState({
 const numberScrollRef = useRef<HTMLDivElement>(null);
   const questions = selectedPackage?.questions ?? [];
   const question = questions[current];
-const isEssay = question?.essayAnswer != null;
+const isEssay =
+  Array.isArray(question?.essayAnswer) &&
+  question.essayAnswer.length > 0;
 
   useEffect(() => {
   const loadExam = async () => {
@@ -179,6 +181,14 @@ const { data: questions, error: questionError } = await supabase
   .order("order_no", { ascending: true })
 
   console.log("QUESTIONS =", questions);
+  questions.forEach((q: any) => {
+  console.log({
+    question: q.question,
+    options: q.options,
+    answer: q.answer,
+    essay_answer: q.essay_answer,
+  });
+});
 console.log("QUESTION ERROR =", questionError);
 
 const { data: allQuestions, error: allQuestionsError } = await supabase
@@ -214,9 +224,7 @@ const parsedPackage: ExamPackage = {
   answer: q.answer,
 
   essayAnswer:
-  Array.isArray(q.essay_answer)
-    ? q.essay_answer
-    : [""],
+  q.essay_answer ?? undefined,
 
   discussion: q.discussion,
   discussionImage: q.discussion_image,
@@ -249,7 +257,9 @@ const initialDoubt =
 // =============================
 const { data: savedAnswerRows } = await supabase
   .from("attempt_answers")
-  .select("question_id, selected_answer, is_doubt")
+  .select(
+    "question_id, selected_answer, essay_answer, is_doubt"
+  )
   .eq("attempt_id", currentAttemptId);
 
 if (savedAnswerRows) {
@@ -281,7 +291,7 @@ if (savedAnswerRows) {
         parsedPackage.questions[index].essayAnswer
       ) {
         initialEssayAnswers[index] =
-          row.selected_answer || "";
+  row.essay_answer || "";
       }
 
     }
@@ -395,37 +405,50 @@ async function saveAnswer(
 
   if (!currentAttemptId) return;
 
-  const currentQuestion = selectedPackage?.questions.find(
-    (q) => q.id === questionId
-  );
+  const currentQuestion =
+    selectedPackage?.questions.find(
+      (q) => q.id === questionId
+    );
 
   if (!currentQuestion) return;
 
-  const { error } = await supabase
-    .from("attempt_answers")
-    .upsert(
-      {
-        attempt_id: currentAttemptId,
-        question_id: questionId,
-        selected_answer: answer,
+  const payload: any = {
+    attempt_id: currentAttemptId,
+    question_id: questionId,
+    is_doubt: doubt[current],
+  };
 
-        is_correct:
-currentQuestion.essayAnswer
-  ? isEssayCorrect(
+  // SOAL ESSAY
+  if (
+    currentQuestion.essayAnswer &&
+    currentQuestion.essayAnswer.length > 0
+  ) {
+    payload.essay_answer = String(answer);
+    payload.selected_answer = null;
+
+    payload.is_correct = isEssayCorrect(
       String(answer),
       currentQuestion.essayAnswer
-    )
-  : answer === currentQuestion.answer,
-
-        is_doubt: doubt[current],
-      },
-      {
-        onConflict: "attempt_id,question_id",
-      }
     );
+  }
+
+  // PILIHAN GANDA
+  else {
+    payload.selected_answer = Number(answer);
+    payload.essay_answer = null;
+
+    payload.is_correct =
+      Number(answer) === currentQuestion.answer;
+  }
+
+  const { error } = await supabase
+    .from("attempt_answers")
+    .upsert(payload, {
+      onConflict: "attempt_id,question_id",
+    });
 
   if (error) {
-    console.error("SAVE ANSWER ERROR", error);
+    console.log(error);
   }
 }
 // =============================
@@ -487,7 +510,13 @@ const formatTime = (seconds: number) => {
   };
 
   const confirmSubmit = () => {
-  const unanswered = answers.filter((a) => a === null).length;
+  const unanswered = selectedPackage.questions.filter((q, index) => {
+  if (q.essayAnswer?.length) {
+    return (essayAnswers[index] ?? "").trim() === "";
+  }
+
+  return answers[index] == null;
+}).length;
 
   const message =
     unanswered > 0
@@ -536,7 +565,10 @@ if (!topicStats[topic]) {
 
 topicStats[topic].total++;
 
-  if (q.essayAnswer != null) {
+  if (
+  Array.isArray(q.essayAnswer) &&
+  q.essayAnswer.length > 0
+) {
 
     const userEssay = (essayAnswers[index] || "").trim();
 
@@ -548,9 +580,6 @@ topicStats[topic].total++;
   userEssay,
   q.essayAnswer
 );
-
-// skor parsial
-correctCount += result.score;
 
 // salah = bagian yang tidak didapat
 correctCount += result.score;
@@ -741,8 +770,7 @@ shadow-sm
 <div
 className="
 flex-1
-overflow-visible
-lg:overflow-y-auto
+overflow-y-auto
 pr-2
 "
 >
@@ -865,7 +893,8 @@ pr-2
     <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-5 gap-2">
       {questions.map((_, index) => {
         const answered =
-  questions[index].essayAnswer != null
+  Array.isArray(questions[index].essayAnswer) &&
+questions[index].essayAnswer.length > 0
     ? (essayAnswers[index] ?? "").trim() !== ""
     : answers[index] != null;
         const isDoubt = doubt[index];

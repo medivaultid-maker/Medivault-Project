@@ -24,7 +24,8 @@ type QuestionItem = {
   discussion_image: string | null;
 
   attempt_answers: {
-  selected_answer: string | number | null;
+  selected_answer: number | null;
+  essay_answer: string | null;
   is_doubt: boolean;
 }[];
 };
@@ -117,9 +118,10 @@ const { data: soalData, error: soalError } = await supabase
   .select(`
     *,
     attempt_answers (
-      selected_answer,
-      is_doubt
-    )
+  selected_answer,
+  essay_answer,
+  is_doubt
+)
 `)
   .eq("package_id", resultData.package_id)
   .eq("attempt_answers.attempt_id", id)
@@ -183,8 +185,9 @@ setCheckingAccess(false);
 
   const filteredQuestions = questions
   .map((question, index) => {
-    const userAnswer =
-question.attempt_answers?.[0]?.selected_answer ?? null;
+    const userAnswer = question.essay_answer
+  ? question.attempt_answers?.[0]?.essay_answer ?? ""
+  : question.attempt_answers?.[0]?.selected_answer ?? null;
 
     const isCorrect =
   question.essay_answer
@@ -345,33 +348,65 @@ question.attempt_answers[0]?.is_doubt ?? false;
   />
 )}
 
-                  <div className="mt-5 space-y-3">
-                    {(question.options ?? []).map((option, optionIndex) => {
-                      const isCorrectAnswer = question.answer === optionIndex;
-                      const isUserAnswer = userAnswer === optionIndex;
+                  {question.essay_answer ? (
 
-                      return (
-                        <div
-                          key={optionIndex}
-                          className={`rounded-2xl border p-4 ${
-                            isCorrectAnswer
-                              ? "border-emerald-300 bg-emerald-50"
-                              : isUserAnswer
-                              ? "border-red-300 bg-red-50"
-                              : "border-slate-200 bg-white"
-                          }`}
-                        >
-                          <div className="flex gap-3">
-                            <strong>
-                              {String.fromCharCode(65 + optionIndex)}.
-                            </strong>
+<div className="mt-5 space-y-4">
 
-                            <span>{option}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <p className="font-bold text-slate-600">
+      Jawaban Kamu
+    </p>
+
+    <p className="mt-2 whitespace-pre-wrap">
+      {String(userAnswer || "-")}
+    </p>
+  </div>
+
+  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4">
+    <p className="font-bold text-emerald-700">
+      Jawaban Referensi
+    </p>
+
+    <p className="mt-2 whitespace-pre-wrap">
+      {Array.isArray(question.essay_answer)
+        ? question.essay_answer.join(", ")
+        : question.essay_answer}
+    </p>
+  </div>
+
+</div>
+
+) : (
+
+<div className="mt-5 space-y-3">
+  {(question.options ?? []).map((option, optionIndex) => {
+    const isCorrectAnswer = question.answer === optionIndex;
+    const isUserAnswer = userAnswer === optionIndex;
+
+    return (
+      <div
+        key={optionIndex}
+        className={`rounded-2xl border p-4 ${
+          isCorrectAnswer
+            ? "border-emerald-300 bg-emerald-50"
+            : isUserAnswer
+            ? "border-red-300 bg-red-50"
+            : "border-slate-200 bg-white"
+        }`}
+      >
+        <div className="flex gap-3">
+          <strong>
+            {String.fromCharCode(65 + optionIndex)}.
+          </strong>
+
+          <span>{option}</span>
+        </div>
+      </div>
+    );
+  })}
+</div>
+
+)}
 
                   {(question.discussion?.trim() || question.discussion_image) && (
   <div className="mt-5 rounded-2xl bg-slate-50 p-5">
