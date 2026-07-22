@@ -24,10 +24,29 @@ import QuestionEditor, {
   QuestionItem,
 } from "../../../components/admin/QuestionEditor";
 const categories = [
+  // Anatomi
   { label: "CBT Anatomi", value: "anatomi-teori" },
   { label: "Praktikum Anatomi", value: "anatomi-praktikum" },
+
+  // Histologi
   { label: "CBT Histologi", value: "histologi-teori" },
   { label: "Praktikum Histologi", value: "histologi-praktikum" },
+
+  // Biokimia
+  { label: "CBT Biokimia", value: "biokimia-teori" },
+  { label: "Praktikum Biokimia", value: "biokimia-praktikum" },
+
+  // Fisiologi
+  { label: "CBT Fisiologi", value: "fisiologi-teori" },
+  { label: "Praktikum Fisiologi", value: "fisiologi-praktikum" },
+
+  // Parasitologi
+  { label: "CBT Parasitologi", value: "parasitologi-teori" },
+  { label: "Praktikum Parasitologi", value: "parasitologi-praktikum" },
+
+  // Mikrobiologi
+  { label: "CBT Mikrobiologi", value: "mikrobiologi-teori" },
+  { label: "Praktikum Mikrobiologi", value: "mikrobiologi-praktikum" },
 ];
 
 function SortableJump({
@@ -454,10 +473,11 @@ order_no: index + 1,
        <section className="px-6 py-8">
   <div className="mx-auto max-w-6xl space-y-5">
     <QuestionEditor
-      questions={questions}
-      setQuestions={setQuestions}
-      isPraktikum={isPraktikum}
-    />
+  questions={questions}
+  setQuestions={setQuestions}
+  isPraktikum={isPraktikum}
+  category={category}
+/>
   </div>
 </section>
 
@@ -650,6 +670,7 @@ order_no: index + 1,
   questions={questions}
   setQuestions={setQuestions}
   isPraktikum={isPraktikum}
+  category={category}
 />
 
 <DragOverlay>

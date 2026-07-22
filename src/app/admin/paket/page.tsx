@@ -34,10 +34,29 @@ type QuestionItem = {
 };
 
 const categories = [
+  // Anatomi
   { label: "CBT Anatomi", value: "anatomi-teori" },
   { label: "Praktikum Anatomi", value: "anatomi-praktikum" },
+
+  // Histologi
   { label: "CBT Histologi", value: "histologi-teori" },
   { label: "Praktikum Histologi", value: "histologi-praktikum" },
+
+  // Biokimia
+  { label: "CBT Biokimia", value: "biokimia-teori" },
+  { label: "Praktikum Biokimia", value: "biokimia-praktikum" },
+
+  // Fisiologi
+  { label: "CBT Fisiologi", value: "fisiologi-teori" },
+  { label: "Praktikum Fisiologi", value: "fisiologi-praktikum" },
+
+  // Parasitologi
+  { label: "CBT Parasitologi", value: "parasitologi-teori" },
+  { label: "Praktikum Parasitologi", value: "parasitologi-praktikum" },
+
+  // Mikrobiologi
+  { label: "CBT Mikrobiologi", value: "mikrobiologi-teori" },
+  { label: "Praktikum Mikrobiologi", value: "mikrobiologi-praktikum" },
 ];
 
 function SortableJump({
@@ -793,9 +812,9 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
 <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
 
   {/* KOLOM SOAL */}
-  <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <div className="mb-6 border-b border-slate-200 pb-4">
-      <span className="text-2xl">📄</span>
+  <div className="flex h-full flex-col rounded-2xl border-2 border-blue-200 bg-blue-50 p-5 shadow-sm">
+    <div className="mb-6 rounded-xl bg-violet-100 p-4">
+      <span className="text-2xl">📝</span>
       <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
         SOAL
       </h3>
@@ -871,10 +890,10 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   </div>
 
   {/* KOLOM JAWABAN */}
-  <div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
-    <div className="mb-6 border-b border-slate-200 pb-4">
-      <span className="text-2xl">🟡</span>
-      <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+  <div className="flex h-full flex-col rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5 shadow-sm">
+    <div className="mb-6 rounded-xl bg-blue-100 p-4">
+      <span className="text-2xl">✅</span>
+      <h3 className="text-3xl font-extrabold tracking-wide text-emerald-700 uppercase">
         JAWABAN
       </h3>
     </div>
@@ -993,10 +1012,10 @@ Misalnya:
   </div>
 
   {/* KOLOM PEMBAHASAN */}
-<div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <div className="mb-6 border-b border-slate-200 pb-4">
-      <span className="text-2xl">🟡</span>
-      <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+<div className="flex h-full flex-col rounded-2xl border-2 border-violet-300 bg-violet-50 p-5 shadow-sm">
+    <div className="mb-6 rounded-xl bg-emerald-100 p-4">
+      <span className="text-2xl">💡</span>
+      <h3 className="text-3xl font-black tracking-wide text-blue-700 uppercase">
         PEMBAHASAN
       </h3>
     </div>
@@ -1013,7 +1032,7 @@ Misalnya:
 />
 
 <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-  <label className="mb-2 block font-semibold text-[#061B3A]">
+  <label className="mb-2 block font-semibold text-emerald-700">
     Gambar Pembahasan
   </label>
 

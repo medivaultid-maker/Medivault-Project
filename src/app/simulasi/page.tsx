@@ -127,55 +127,143 @@ const [packages, setPackages] = useState<any[]>([]);
 </div>
 
         <div style={styles.grid}>
-          <div style={styles.card}>
-            <div style={styles.anatomyHeader}>
-              <h2 style={styles.cardTitle}>Anatomi</h2>
-            </div>
+  {/* ================= ANATOMI ================= */}
+  <div style={styles.card}>
+    <div style={styles.anatomyHeader}>
+      <h2 style={styles.cardTitle}>Anatomi</h2>
+    </div>
 
-            <div style={styles.optionList}>
-              <Link href="/paket/anatomi-teori" style={styles.option}>
-                <div>
-                  <h3 style={styles.optionTitle}>CBT Anatomi</h3>
-              
-                </div>
-                <span style={styles.arrow}>›</span>
-              </Link>
-
-              <Link href="/paket/anatomi-praktikum" style={styles.option}>
-                <div>
-                  <h3 style={styles.optionTitle}>Praktikum Anatomi</h3>
-                 
-                </div>
-                <span style={styles.arrow}>›</span>
-              </Link>
-            </div>
-          </div>
-
-          <div style={styles.card}>
-            <div style={styles.histologyHeader}>
-              <h2 style={styles.cardTitle}>Histologi</h2>
-            </div>
-
-            <div style={styles.optionList}>
-              <Link href="/paket/histologi-teori" style={styles.option}>
-                <div>
-                  <h3 style={styles.optionTitle}>CBT Histologi</h3>
-                  
-                </div>
-                <span style={styles.arrow}>›</span>
-              </Link>
-
-              <Link href="/paket/histologi-praktikum" style={styles.option}>
-                <div>
-                  <h3 style={styles.optionTitle}>Praktikum Histologi</h3>
-                  
-                </div>
-                <span style={styles.arrow}>›</span>
-              </Link>
-            </div>
-          </div>
+    <div style={styles.optionList}>
+      <Link href="/paket/anatomi-teori" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>CBT Anatomi</h3>
         </div>
-        
+        <span style={styles.arrow}>›</span>
+      </Link>
+
+      <Link href="/paket/anatomi-praktikum" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>Praktikum Anatomi</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+    </div>
+  </div>
+
+  {/* ================= HISTOLOGI ================= */}
+  <div style={styles.card}>
+    <div style={styles.histologyHeader}>
+      <h2 style={styles.cardTitle}>Histologi</h2>
+    </div>
+
+    <div style={styles.optionList}>
+      <Link href="/paket/histologi-teori" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>CBT Histologi</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+
+      <Link href="/paket/histologi-praktikum" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>Praktikum Histologi</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+    </div>
+  </div>
+
+  {/* ================= BIOKIMIA ================= */}
+  <div style={styles.card}>
+    <div style={styles.biochemistryHeader}>
+      <h2 style={styles.cardTitle}>Biokimia</h2>
+    </div>
+
+    <div style={styles.optionList}>
+      <Link href="/paket/biokimia-teori" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>CBT Biokimia</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+
+      <Link href="/paket/biokimia-praktikum" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>Praktikum Biokimia</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+    </div>
+  </div>
+
+  {/* ================= FISIOLOGI ================= */}
+  <div style={styles.card}>
+    <div style={styles.physiologyHeader}>
+      <h2 style={styles.cardTitle}>Fisiologi</h2>
+    </div>
+
+    <div style={styles.optionList}>
+      <Link href="/paket/fisiologi-teori" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>CBT Fisiologi</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+
+      <Link href="/paket/fisiologi-praktikum" style={styles.option}>
+        <div>
+          <h3 style={styles.optionTitle}>Praktikum Fisiologi</h3>
+        </div>
+        <span style={styles.arrow}>›</span>
+      </Link>
+    </div>
+  </div>
+        {/* ================= PARASITOLOGI ================= */}
+        <div style={styles.card}>
+  <div style={styles.parasitologyHeader}>
+    <h2 style={styles.cardTitle}>Parasitologi</h2>
+  </div>
+
+  <div style={styles.optionList}>
+    <Link href="/paket/parasitologi-teori" style={styles.option}>
+      <div>
+        <h3 style={styles.optionTitle}>CBT Parasitologi</h3>
+      </div>
+      <span style={styles.arrow}>›</span>
+    </Link>
+
+    <Link href="/paket/parasitologi-praktikum" style={styles.option}>
+      <div>
+        <h3 style={styles.optionTitle}>Praktikum Parasitologi</h3>
+      </div>
+      <span style={styles.arrow}>›</span>
+    </Link>
+  </div>
+</div>
+
+<div style={styles.card}>
+  <div style={styles.microbiologyHeader}>
+    <h2 style={styles.cardTitle}>Mikrobiologi</h2>
+  </div>
+
+{/* ================= MIKROBIOLOGI ================= */}
+  <div style={styles.optionList}>
+    <Link href="/paket/mikrobiologi-teori" style={styles.option}>
+      <div>
+        <h3 style={styles.optionTitle}>CBT Mikrobiologi</h3>
+      </div>
+      <span style={styles.arrow}>›</span>
+    </Link>
+
+    <Link href="/paket/mikrobiologi-praktikum" style={styles.option}>
+      <div>
+        <h3 style={styles.optionTitle}>Praktikum Mikrobiologi</h3>
+      </div>
+      <span style={styles.arrow}>›</span>
+    </Link>
+  </div>
+</div>
+</div>
         {token <= 0 && (
           <div style={styles.warningBox}>
             <strong>Token belum tersedia</strong>
@@ -390,5 +478,44 @@ buyButton: {
     "0 16px 40px rgba(6,27,58,.18)",
 
   transition: "all .25s ease",
+},
+biochemistryHeader: {
+  background:
+    "linear-gradient(135deg,#7C3AED 0%,#9333EA 100%)",
+  color: "#FFFFFF",
+  padding: "28px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+physiologyHeader: {
+  background:
+    "linear-gradient(135deg,#EA580C 0%,#F97316 100%)",
+  color: "#FFFFFF",
+  padding: "28px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+microbiologyHeader: {
+  background:
+    "linear-gradient(135deg,#0891B2 0%,#06B6D4 100%)",
+  color: "#FFFFFF",
+  padding: "28px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+parasitologyHeader: {
+  background:
+    "linear-gradient(135deg,#16A34A 0%,#22C55E 100%)",
+  color: "#FFFFFF",
+  padding: "28px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
 },
 };

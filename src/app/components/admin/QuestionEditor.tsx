@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { TOPICS } from "../../lib/topics";
 export type QuestionItem = {
   id: string;
@@ -27,7 +28,20 @@ export default function QuestionEditor({
 }: Props) {
 
      const optionLabels = ["A", "B", "C", "D", "E"];
+const editorRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+useEffect(() => {
+  questions.forEach((q, index) => {
+    const editor = editorRefs.current[index];
+
+    if (
+      editor &&
+      editor.innerHTML !== (q.discussion || "")
+    ) {
+      editor.innerHTML = q.discussion || "";
+    }
+  });
+}, [questions]);
   const normalizeImportText = (text: string) => {
     return text
       .replace(/\r/g, "\n")
@@ -162,20 +176,25 @@ const deleteEssayAnswer = (
 <>
 {questions.map((q, i) => (
 <div
-key={q.id}
-className="mt-6"
+  key={q.id}
+  id={`soal-${i + 1}`}
+  className="mt-6 rounded-3xl bg-[#061B3A] p-6 shadow-lg"
 >
 
-<div className="mb-5 flex items-center justify-between">
+<div className="mb-6 flex items-center justify-between">
   <div>
-    <h3 className="font-poppins text-xl font-bold text-[#061B3A]">
-      Soal Nomor {i + 1}
+    <p className="text-sm font-semibold text-emerald-300">
+      Soal #{i + 1}
+    </p>
+
+    <h3 className="text-2xl font-bold text-white">
+      Editor Soal
     </h3>
   </div>
 </div>
 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
 
-<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+<div className="flex h-full flex-col rounded-2xl border-2 border-blue-200 bg-blue-50/40 p-5 shadow-sm">
 {/* TOPIK */}
 <label className="mb-2 block font-semibold text-slate-700">
 Topik
@@ -227,7 +246,7 @@ className="mt-3 max-h-60 rounded-xl border"
 )}
 
 </div>
-<div className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
+<div className="flex h-full flex-col rounded-2xl border-2 border-amber-200 bg-amber-50/40 p-5 shadow-sm">
 {/* JAWABAN CBT */}
 {!isPraktikum && (
 <>
@@ -314,7 +333,7 @@ onChange={(e)=>updateAnswer(i,Number(e.target.value))}
 </div>
 
 {/* PEMBAHASAN */}
-<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+<div className="flex h-full flex-col rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-5 shadow-sm">
 <label className="mt-5 block font-semibold">
 Pembahasan
 </label>
@@ -324,41 +343,41 @@ Pembahasan
 
 <button
 type="button"
-onClick={() => {
+onMouseDown={(e) => {
+  e.preventDefault();
   document.execCommand("bold");
 }}
 className="rounded-lg border px-3 py-1 font-bold hover:bg-slate-100"
 >
-B
+Bf<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"></div>
 </button>
 
 
 <button
-type="button"
-onClick={() => {
-  document.execCommand("insertUnorderedList");
-}}
-className="rounded-lg border px-3 py-1 hover:bg-slate-100"
+  type="button"
+  onMouseDown={(e) => {
+    e.preventDefault();
+    document.execCommand("bold");
+  }}
+  className="rounded-lg border px-3 py-1 font-bold hover:bg-slate-100"
 >
-• List
+  B
 </button>
 
 </div>
 
 
 <div
-contentEditable
-suppressContentEditableWarning
-className="min-h-[180px] w-full rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-700 outline-none focus:border-emerald-400 focus:bg-white"
-dangerouslySetInnerHTML={{
-  __html: q.discussion || ""
-}}
-onInput={(e)=>{
-  updateDiscussion(
-    i,
-    e.currentTarget.innerHTML
-  );
-}}
+  ref={(el) => {
+    editorRefs.current[i] = el;
+  }}
+  contentEditable
+  suppressContentEditableWarning
+  style={{ whiteSpace: "pre-wrap" }}
+  className="min-h-[180px] w-full rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-700 outline-none focus:border-emerald-400 focus:bg-white"
+  onInput={(e) => {
+    updateDiscussion(i, e.currentTarget.innerHTML);
+  }}
 />
 <label className="mt-5 block font-semibold">
 Gambar Pembahasan
