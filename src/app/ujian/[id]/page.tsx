@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../lib/supabase";
 import { useParams, useSearchParams } from "next/navigation";
+import { updateAILevel } from "../../lib/updateAILevel";
 import {
   isEssayCorrect,
   getEssayScore,
@@ -58,6 +59,7 @@ export default function UjianPage() {
 const searchParams = useSearchParams();
 
 const id = params.id as string;
+const isAIPractice = id === "ai";
 const attemptId = searchParams.get("attempt");
 useEffect(() => {
   if (attemptId) {
@@ -138,7 +140,7 @@ if (currentAttemptId) {
 
 const { data: profile } = await supabase
   .from("profiles")
-  .select("role, token")
+  .select("role, token, ai_level, weakest_topics")
   .eq("id", user.id)
   .single();
 
@@ -157,28 +159,80 @@ const savedToken = profile?.token || 0;
 console.log("ID =", id);
 
 // Ambil paket dari Supabase berdasarkan id di URL
-const { data: packageData, error: packageError } = await supabase
-  .from("exam_packages")
-  .select("*")
-  .eq("id", id)
-  .eq("status", "published")
-  .single();
+let packageData: any = null;
+let questions: any[] = [];
 
-  console.log("PACKAGE =", packageData);
-console.log("PACKAGE ERROR =", packageError);
+if (!isAIPractice) {
+  const { data, error } = await supabase
+    .from("exam_packages")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
 
-if (packageError || !packageData) {
-  alert("Paket tidak ditemukan");
-  window.location.href = "/simulasi";
-  return;
+  if (error || !data) {
+    alert("Paket tidak ditemukan");
+    window.location.href = "/simulasi";
+    return;
+  }
+
+  packageData = data;
+
+  const { data: questionData, error: questionError } =
+    await supabase
+      .from("questions")
+      .select("*")
+      .eq("package_id", id)
+      .order("order_no", { ascending: true });
+
+  if (questionError || !questionData) {
+    alert("Soal tidak ditemukan");
+    return;
+  }
+
+  questions = questionData;
+} else {
+
+  const weakest =
+    profile?.weakest_topics?.[0]?.topic;
+
+  const topic =
+    weakest || localStorage.getItem("ai_topic");
+
+
+  const { data: questionData, error } = await supabase
+    .from("questions")
+    .select("*")
+    .eq("topic", topic)
+    .eq("difficulty", profile.ai_level);
+
+
+  if (error || !questionData) {
+    alert("Soal AI tidak ditemukan");
+    return;
+  }
+
+
+  questionData.sort(() => Math.random() - 0.5);
+
+  questions = questionData.slice(0, 20);
+
+
+  packageData = {
+    id: "ai",
+    title: `Latihan AI - ${topic}`,
+    category: "AI",
+    duration: 20,
+    token_cost: 0,
+    total_questions: questions.length,
+  };
+
 }
 
+  console.log("PACKAGE =", packageData);
+
+
 // Ambil soal dari Supabase
-const { data: questions, error: questionError } = await supabase
-  .from("questions")
-  .select("*")
-  .eq("package_id", id)
-  .order("order_no", { ascending: true })
 
   console.log("QUESTIONS =", questions);
   questions.forEach((q: any) => {
@@ -189,7 +243,7 @@ const { data: questions, error: questionError } = await supabase
     essay_answer: q.essay_answer,
   });
 });
-console.log("QUESTION ERROR =", questionError);
+
 
 const { data: allQuestions, error: allQuestionsError } = await supabase
   .from("questions")
@@ -197,12 +251,6 @@ const { data: allQuestions, error: allQuestionsError } = await supabase
 
 console.log("ALL QUESTIONS =", allQuestions);
 console.log("ALL QUESTIONS ERROR =", allQuestionsError);
-
-if (questionError || !questions || questions.length === 0) {
-  alert("Soal tidak ditemukan");
-  window.location.href = "/simulasi";
-  return;
-}
 
 const parsedPackage: ExamPackage = {
   id: packageData.id,
@@ -609,12 +657,63 @@ topicStats[topic].correct++;
 
 });
 
+// =============================
+// SIMPAN RIWAYAT SOAL UNTUK AI ADAPTIVE CBT
+// =============================
+
+const attempts = selectedPackage.questions.map((q, index) => ({
+  user_id: user.id,
+  question_id: q.id,
+  topic: q.topic || "Lainnya",
+  difficulty: "sedang",
+  correct:
+    Array.isArray(q.essayAnswer) && q.essayAnswer.length > 0
+      ? getEssayScore(
+          (essayAnswers[index] || "").trim(),
+          q.essayAnswer
+        ).score >= 0.85
+      : answers[index] === q.answer,
+  score:
+    Array.isArray(q.essayAnswer) && q.essayAnswer.length > 0
+      ? Math.round(
+          getEssayScore(
+            (essayAnswers[index] || "").trim(),
+            q.essayAnswer
+          ).score * 100
+        )
+      : answers[index] === q.answer
+      ? 100
+      : 0,
+}));
+
+await supabase
+  .from("question_attempts")
+  .insert(attempts);
+
 const doubtCount = doubt.filter(Boolean).length;
 
 const finalScore = Math.round(
   (correctCount / totalQuestions) * 100
 );
-  
+
+if (isAIPractice) {
+  await supabase
+    .from("profiles")
+    .update({
+      ai_last_score: finalScore,
+    })
+    .eq("id", user.id);
+}
+
+const weakestTopics = Object.entries(topicStats)
+  .map(([topic, data]) => ({
+    topic,
+    accuracy:
+      data.total === 0
+        ? 0
+        : Math.round((data.correct / data.total) * 100),
+  }))
+  .sort((a, b) => a.accuracy - b.accuracy);
 
   const savedAttemptId = localStorage.getItem("medivault_attempt_id");
 
@@ -672,6 +771,15 @@ await supabase
     finished: true,
   })
   .eq("attempt_id", currentAttemptId);
+  await supabase
+  .from("profiles")
+  .update({
+    weakest_topics: weakestTopics,
+  })
+  .eq("id", user.id);
+
+  await updateAILevel(user.id);
+
 setResultAttemptId(currentAttemptId);
   localStorage.removeItem("medivault_attempt_id");
 localStorage.removeItem(`exam-current-${selectedPackage.id}`);

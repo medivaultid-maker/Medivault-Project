@@ -9,6 +9,7 @@ import { supabase } from "../lib/supabase";
 export default function SimulasiPage() {
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [token, setToken] = useState(0);
+  const [weakestTopics, setWeakestTopics] = useState<any[]>([]);
 const [packages, setPackages] = useState<any[]>([]);
   useEffect(() => {
   const loadUser = async () => {
@@ -24,10 +25,10 @@ const [packages, setPackages] = useState<any[]>([]);
     }
 
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, token")
-      .eq("id", user.id)
-      .single();
+  .from("profiles")
+  .select("role, token, weakest_topics")
+  .eq("id", user.id)
+  .single();
 
     if (!profile) {
       window.location.href = "/login";
@@ -40,6 +41,7 @@ const [packages, setPackages] = useState<any[]>([]);
     }
 
     setToken(profile.token || 0);
+    setWeakestTopics(profile.weakest_topics || []);
     setCheckingAccess(false);
   };
 
@@ -77,6 +79,49 @@ const [packages, setPackages] = useState<any[]>([]);
 </div>
 
           <div style={styles.tokenBox}>
+            {weakestTopics.length > 0 && (
+  <div
+    style={{
+      maxWidth: 1100,
+      margin: "0 auto 28px",
+      background: "#6D28D9",
+      color: "white",
+      borderRadius: 24,
+      padding: 24,
+    }}
+  >
+    <h2 style={{ marginBottom: 10 }}>
+      🤖 Latihan AI Berdasarkan Kelemahan
+    </h2>
+
+    <p style={{ marginBottom: 20 }}>
+      Topik yang paling perlu kamu latih:
+      <b> {weakestTopics[0].topic}</b>
+    </p>
+
+    <button
+      onClick={() => {
+        localStorage.setItem(
+          "ai_topic",
+          weakestTopics[0].topic
+        );
+
+        window.location.href = "/ujian/ai";
+      }}
+      style={{
+        background: "white",
+        color: "#6D28D9",
+        border: "none",
+        padding: "14px 24px",
+        borderRadius: 14,
+        fontWeight: 700,
+        cursor: "pointer",
+      }}
+    >
+      Mulai Latihan AI
+    </button>
+  </div>
+)}
   <span>Jumlah Akses</span>
   <strong>{token}</strong>
 </div>

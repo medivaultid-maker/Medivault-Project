@@ -11,6 +11,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import QuestionEditor from "../../components/admin/QuestionEditor";
+import { TOPICS } from "../../lib/topics";
 import {
   SortableContext,
   rectSortingStrategy,
@@ -562,11 +563,24 @@ window.location.href = "/admin";
 
         <section className="px-6 py-8">
           <div className="mx-auto max-w-6xl space-y-5">
-            <QuestionEditor
-    questions={questions}
-    setQuestions={setQuestions}
-    isPraktikum={isPraktikum}
+           <QuestionEditor
+  questions={questions}
+  setQuestions={setQuestions}
+  isPraktikum={isPraktikum}
+  category={category}
 />
+
+{questions.map((q, i) => (
+  <div key={q.id} className="mt-5 rounded-xl bg-white p-5">
+    <h3 className="font-bold">
+      Pembahasan Soal {i + 1}
+    </h3>
+
+    <p className="mt-2 text-slate-700">
+      {q.discussion}
+    </p>
+  </div>
+))}
                 </div>
 
                
@@ -791,12 +805,19 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   Topik
 </label>
 
-<input
+<select
   className={`${inputClass} mb-4`}
-  placeholder="Contoh: Thorax, Abdomen, Upper Limb, Epitel, dll"
   value={q.topic}
   onChange={(e) => updateTopic(i, e.target.value)}
-/>
+>
+  <option value="">Pilih BAB</option>
+
+  {(TOPICS[category] || []).map((topic) => (
+    <option key={topic} value={topic}>
+      {topic}
+    </option>
+  ))}
+</select>
 
     <label className="font-semibold text-slate-700">
       Tulis Soal

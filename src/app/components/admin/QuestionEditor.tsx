@@ -1,5 +1,5 @@
 "use client";
-
+import { TOPICS } from "../../lib/topics";
 export type QuestionItem = {
   id: string;
   topic: string;
@@ -16,12 +16,14 @@ type Props = {
   questions: QuestionItem[];
   setQuestions: React.Dispatch<React.SetStateAction<QuestionItem[]>>;
   isPraktikum: boolean;
+  category: string;
 };
 
 export default function QuestionEditor({
   questions,
   setQuestions,
   isPraktikum,
+  category,
 }: Props) {
 
      const optionLabels = ["A", "B", "C", "D", "E"];
@@ -147,6 +149,8 @@ const deleteEssayAnswer = (
     reader.readAsDataURL(file);
   };
 
+  
+
   const inputClass =
     "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50";
 
@@ -177,12 +181,19 @@ className="mt-6"
 Topik
 </label>
 
-<input
-className={inputClass}
-placeholder="Contoh: Thorax, Abdomen, Epitel..."
-value={q.topic}
-onChange={(e)=>updateTopic(i,e.target.value)}
-/>
+<select
+  className={inputClass}
+  value={q.topic}
+  onChange={(e) => updateTopic(i, e.target.value)}
+>
+  <option value="">Pilih BAB</option>
+
+  {(TOPICS[category] || []).map((topic) => (
+    <option key={topic} value={topic}>
+      {topic}
+    </option>
+  ))}
+</select>
 
 
 
@@ -309,10 +320,45 @@ Pembahasan
 </label>
 
 
-<textarea
-className={textareaClass}
-value={q.discussion}
-onChange={(e)=>updateDiscussion(i,e.target.value)}
+<div className="mb-3 flex gap-2">
+
+<button
+type="button"
+onClick={() => {
+  document.execCommand("bold");
+}}
+className="rounded-lg border px-3 py-1 font-bold hover:bg-slate-100"
+>
+B
+</button>
+
+
+<button
+type="button"
+onClick={() => {
+  document.execCommand("insertUnorderedList");
+}}
+className="rounded-lg border px-3 py-1 hover:bg-slate-100"
+>
+• List
+</button>
+
+</div>
+
+
+<div
+contentEditable
+suppressContentEditableWarning
+className="min-h-[180px] w-full rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-700 outline-none focus:border-emerald-400 focus:bg-white"
+dangerouslySetInnerHTML={{
+  __html: q.discussion || ""
+}}
+onInput={(e)=>{
+  updateDiscussion(
+    i,
+    e.currentTarget.innerHTML
+  );
+}}
 />
 <label className="mt-5 block font-semibold">
 Gambar Pembahasan
