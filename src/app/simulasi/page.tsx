@@ -74,56 +74,67 @@ const [packages, setPackages] = useState<any[]>([]);
   </h1>
 
   <p style={styles.subtitle}>
-    Pilih kategori dan jenis latihan yang ingin kamu kerjakan.
+   
   </p>
 </div>
 
-          <div style={styles.tokenBox}>
-            {weakestTopics.length > 0 && (
-  <div
-    style={{
-      maxWidth: 1100,
-      margin: "0 auto 28px",
-      background: "#6D28D9",
-      color: "white",
-      borderRadius: 24,
-      padding: 24,
-    }}
-  >
-    <h2 style={{ marginBottom: 10 }}>
-      🤖 Latihan AI Berdasarkan Kelemahan
+         <div style={styles.heroBox}>
+
+  <div style={styles.heroLeft}>
+
+    <div style={styles.aiBadge}>
+      🤖 AI Adaptive Learning
+    </div>
+
+    <h2 style={styles.heroTitle}>
+      Latihan Berdasarkan Kelemahanmu
     </h2>
 
-    <p style={{ marginBottom: 20 }}>
-      Topik yang paling perlu kamu latih:
-      <b> {weakestTopics[0].topic}</b>
+    <p style={styles.heroText}>
+      {weakestTopics.length > 0
+        ? <>Topik yang perlu kamu kuasai selanjutnya adalah <b>{weakestTopics[0].topic}</b>.</>
+        : "Kerjakan beberapa simulasi terlebih dahulu agar AI dapat menganalisis kemampuanmu."}
     </p>
 
-    <button
-      onClick={() => {
-        localStorage.setItem(
-          "ai_topic",
-          weakestTopics[0].topic
-        );
+    {weakestTopics.length > 0 && (
+      <button
+        onClick={() => {
+          localStorage.setItem(
+            "ai_topic",
+            weakestTopics[0].topic
+          );
 
-        window.location.href = "/ujian/ai";
-      }}
-      style={{
-        background: "white",
-        color: "#6D28D9",
-        border: "none",
-        padding: "14px 24px",
-        borderRadius: 14,
-        fontWeight: 700,
-        cursor: "pointer",
-      }}
-    >
-      Mulai Latihan AI
-    </button>
+          window.location.href = "/ujian/ai";
+        }}
+        style={styles.aiButton}
+      >
+        🚀 Mulai Latihan AI
+      </button>
+    )}
+
   </div>
-)}
-  <span>Jumlah Akses</span>
-  <strong>{token}</strong>
+
+  <div style={styles.heroRight}>
+
+    <div style={styles.tokenCard}>
+      <p style={styles.tokenLabel}>
+        Jumlah Akses
+      </p>
+
+      <h2 style={styles.tokenValue}>
+        {token}
+      </h2>
+
+      <Link
+        href="/token"
+        style={styles.tokenButton}
+      >
+        Tambah Akses
+      </Link>
+    </div>
+
+  </div>
+
 </div>
 
         <div style={styles.grid}>
@@ -337,7 +348,7 @@ header: {
     fontSize: "16px",
   },
   tokenBox: {
-  maxWidth: "1100px",
+  maxWidth: "1400px",
   margin: "0 auto 28px",
   background: "white",
   border: "1px solid #E2E8F0",
@@ -350,67 +361,67 @@ header: {
   boxShadow: "0 14px 40px rgba(6,27,58,.06)",
 },
   grid: {
-    maxWidth: "1100px",
-    margin: "0 auto",
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "28px",
-  },
+  maxWidth: "1400px",
+  margin: "0 auto",
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0,1fr))",
+  gap: "18px",
+},
   card: {
   background: "#FFFFFF",
-  borderRadius: "28px",
+  borderRadius: "18px",
   border: "1px solid #E2E8F0",
   overflow: "hidden",
-  boxShadow: "0 20px 50px rgba(6,27,58,.06)",
+  boxShadow: "0 8px 24px rgba(6,27,58,.06)",
 },
   anatomyHeader: {
   background:
     "linear-gradient(135deg,#061B3A 0%,#234F42 100%)",
   color: "#FFFFFF",
-  padding: "28px",
+  padding: "16px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
 },
 
 histologyHeader: {
-  background:
-    "linear-gradient(135deg,#234F42 0%,#3A6B5B 100%)",
+  background: "linear-gradient(135deg,#234F42 0%,#3A6B5B 100%)",
   color: "#FFFFFF",
-  padding: "28px",
+  padding: "16px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
 },
   cardTitle: {
-  fontSize: "32px",
+  fontSize: "22px",
   fontWeight: 800,
   margin: 0,
-  color: "#FFFFFF",
+  color: "#fff",
   textAlign: "center",
 },
   optionList: {
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-  },
+  padding: "14px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+},
   option: {
-  padding: "20px",
-  borderRadius: "18px",
+  padding: "12px 14px",
+  borderRadius: "12px",
   border: "1px solid #E2E8F0",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
   textDecoration: "none",
   color: "inherit",
-  background: "#FFFFFF",
+  background: "#fff",
 },
   optionTitle: {
-    color: "#061b3a",
-    fontSize: "17px",
-    marginBottom: "6px",
-  },
+  color: "#061B3A",
+  fontSize: "14px",
+  fontWeight: 700,
+  margin: 0,
+},
   optionText: {
     color: "#64748b",
     fontSize: "14px",
@@ -418,11 +429,11 @@ histologyHeader: {
   },
   arrow: {
   color: "#234F42",
-  fontSize: "30px",
+  fontSize: "20px",
   fontWeight: 700,
 },
   warningBox: {
-  maxWidth: "1100px",
+  maxWidth: "1400px",
   margin: "48px auto 0",
   background: "#FFFFFF",
   border: "1px solid #E2E8F0",
@@ -483,7 +494,7 @@ biochemistryHeader: {
   background:
     "linear-gradient(135deg,#7C3AED 0%,#9333EA 100%)",
   color: "#FFFFFF",
-  padding: "28px",
+  padding: "16px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -493,7 +504,7 @@ physiologyHeader: {
   background:
     "linear-gradient(135deg,#EA580C 0%,#F97316 100%)",
   color: "#FFFFFF",
-  padding: "28px",
+  padding: "16px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -503,7 +514,7 @@ microbiologyHeader: {
   background:
     "linear-gradient(135deg,#0891B2 0%,#06B6D4 100%)",
   color: "#FFFFFF",
-  padding: "28px",
+  padding: "16px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -513,9 +524,99 @@ parasitologyHeader: {
   background:
     "linear-gradient(135deg,#16A34A 0%,#22C55E 100%)",
   color: "#FFFFFF",
-  padding: "28px",
+  padding: "16px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
 },
+
+heroBox: {
+  maxWidth: "1400px",
+  margin: "0 auto 40px",
+  background:
+    "linear-gradient(135deg,#061B3A 0%,#123D73 100%)",
+  borderRadius: "28px",
+  padding: "42px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "40px",
+  color: "white",
+  boxShadow: "0 20px 60px rgba(6,27,58,.18)",
+},
+
+heroLeft: {
+  flex: 1,
+},
+
+heroRight: {
+  width: "250px",
+},
+
+aiBadge: {
+  display: "inline-block",
+  background: "rgba(255,255,255,.15)",
+  padding: "8px 16px",
+  borderRadius: 999,
+  fontWeight: 700,
+  marginBottom: 18,
+},
+
+heroTitle: {
+  fontSize: "38px",
+  fontWeight: 800,
+  marginBottom: "12px",
+},
+
+heroText: {
+  fontSize: "17px",
+  lineHeight: 1.7,
+  opacity: .95,
+  maxWidth: "650px",
+},
+
+aiButton: {
+  marginTop: "26px",
+  padding: "16px 28px",
+  background: "#fff",
+  color: "#061B3A",
+  border: "none",
+  borderRadius: "16px",
+  fontWeight: 800,
+  cursor: "pointer",
+  fontSize: "16px",
+},
+
+tokenCard: {
+  background: "rgba(255,255,255,.12)",
+  border: "1px solid rgba(255,255,255,.18)",
+  borderRadius: "20px",
+  padding: "24px",
+  textAlign: "center",
+  backdropFilter: "blur(10px)",
+},
+
+tokenLabel: {
+  fontSize: "14px",
+  opacity: .8,
+  marginBottom: "8px",
+},
+
+tokenValue: {
+  fontSize: "56px",
+  fontWeight: 900,
+  margin: "10px 0",
+},
+
+tokenButton: {
+  display: "inline-block",
+  marginTop: "12px",
+  background: "#fff",
+  color: "#061B3A",
+  padding: "12px 22px",
+  borderRadius: "12px",
+  textDecoration: "none",
+  fontWeight: 700,
+},
+
 };

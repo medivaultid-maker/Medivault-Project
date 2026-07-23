@@ -814,7 +814,7 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   {/* KOLOM SOAL */}
   <div className="flex h-full flex-col rounded-2xl border-2 border-blue-200 bg-blue-50 p-5 shadow-sm">
     <div className="mb-6 rounded-xl bg-violet-100 p-4">
-      <span className="text-2xl">📝</span>
+      
       <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
         SOAL
       </h3>
@@ -892,7 +892,7 @@ Pembahasan: Pernyataan 1, 2, dan 3 benar karena sesuai dengan alur sirkulasi jan
   {/* KOLOM JAWABAN */}
   <div className="flex h-full flex-col rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5 shadow-sm">
     <div className="mb-6 rounded-xl bg-blue-100 p-4">
-      <span className="text-2xl">✅</span>
+     
       <h3 className="text-3xl font-extrabold tracking-wide text-emerald-700 uppercase">
         JAWABAN
       </h3>
@@ -1014,7 +1014,7 @@ Misalnya:
   {/* KOLOM PEMBAHASAN */}
 <div className="flex h-full flex-col rounded-2xl border-2 border-violet-300 bg-violet-50 p-5 shadow-sm">
     <div className="mb-6 rounded-xl bg-emerald-100 p-4">
-      <span className="text-2xl">💡</span>
+   
       <h3 className="text-3xl font-black tracking-wide text-blue-700 uppercase">
         PEMBAHASAN
       </h3>

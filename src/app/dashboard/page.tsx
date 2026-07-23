@@ -197,24 +197,42 @@ setAiReport(report);
       <Navbar />
 
       <section className="px-6 py-10 md:px-10">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-[1400px] px-2">
 
-          {/* HEADER */}
-          <div className="mb-10">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#061B3A]">
-              Selamat datang, {name}
-            </h1>
+         {/* HERO */}
+<div className="mb-10 overflow-hidden rounded-[32px] bg-gradient-to-r from-[#061B3A] via-[#0E2A56] to-[#234F42] p-8 text-white shadow-[0_20px_60px_rgba(6,27,58,.25)]">
 
-            <p className="mt-2 text-slate-500 text-sm">
-              Pantau perkembangan belajar dan riwayat latihan dalam satu dashboard.
-            </p>
-          </div>
+  <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+
+    <div className="max-w-2xl">
+
+     
+      <h1 className="mt-5 text-4xl font-black lg:text-5xl">
+        Selamat datang,
+        <br />
+        {name}
+      </h1>
+
+      <p className="mt-4 max-w-xl text-white/80 leading-7">
+        Pantau perkembangan belajar, analisis kemampuan,
+        dan rekomendasi belajar otomatis dari Medivault AI.
+      </p>
+
+    </div>
+
+  
+
+  </div>
+
+</div>
 
           {/* AI DASHBOARD */}
 
 {aiReport && (
 
-<div className="mb-10 rounded-3xl border border-indigo-100 bg-indigo-50 p-6 shadow-sm">
+<div className="mb-10 rounded-3xl border border-indigo-100 bg-gradient-to-r
+from-indigo-50
+to-sky-50 p-6 shadow-sm">
 
 
 <h2 className="text-2xl font-extrabold text-[#061B3A]">
@@ -231,7 +249,15 @@ Analisis kemampuan berdasarkan latihan terakhir kamu.
 <div className="mt-6 grid gap-4 md:grid-cols-2">
 
 
-<div className="rounded-2xl bg-white p-5">
+<div className="
+rounded-3xl
+border
+border-white
+bg-white/80
+backdrop-blur
+p-6
+shadow-lg
+">
 
 <h3 className="font-extrabold text-emerald-600">
 💪 Topik Terkuat
@@ -301,7 +327,9 @@ Kemampuan {item.score}%
 
 {achievements.length > 0 && (
 
-<div className="mb-10 rounded-3xl border border-yellow-100 bg-yellow-50 p-6">
+<div className="mb-10 rounded-3xl border border-yellow-100 bg-gradient-to-r
+from-yellow-50
+to-orange-50 p-6">
 
 
 <h2 className="text-2xl font-extrabold text-[#061B3A]">
@@ -321,7 +349,14 @@ Badge yang berhasil kamu kumpulkan.
 
 <div
 key={index}
-className="rounded-2xl bg-white p-5 shadow-sm"
+className="rounded-2x rounded-3xl
+border
+border-white
+bg-white/80
+backdrop-blur
+shadow-lg
+hover:-translate-y-1
+transition p-5 shadow-[0_18px_45px_rgba(79,70,229,.08)]"
 >
 
 
@@ -355,7 +390,9 @@ className="rounded-2xl bg-white p-5 shadow-sm"
 
 {recommendation && (
 
-<div className="mb-10 rounded-3xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
+<div className="mb-10 rounded-3xl border border-emerald-100 bg-gradient-to-r
+from-emerald-50
+to-teal-50 p-6 shadow-sm">
 
 
 <h2 className="text-2xl font-extrabold text-[#061B3A]">
@@ -429,41 +466,10 @@ Pelajari materi →
 
 )}
 
-          {/* STATS */}
-          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-            <div className="rounded-3xl border border-white/40 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(6,27,58,0.06)] backdrop-blur-xl p-6 shadow-lg">
-              <p className="text-sm font-semibold text-slate-500">
-                Jumlah Akses
-              </p>
-
-              <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-3xl font-extrabold text-[#061B3A]">
-                  {token}
-                </h2>
-
-                <Link
-  href="/token"
-  className="rounded-xl border border-[#DCE5E0] bg-white px-4 py-2 text-sm font-bold text-[#061B3A] shadow-sm transition hover:-translate-y-0.5 hover:border-[#234F42] hover:bg-[#EEF6F3]"
->
-  Akses Latihan
-</Link>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-white/40 bg-white/70 backdrop-blur-xl p-6 shadow-lg">
-              <p className="text-sm font-semibold text-slate-500">
-                Total Latihan
-              </p>
-
-              <h2 className="mt-3 text-3xl font-extrabold text-[#061B3A]">
-                {history.length}
-              </h2>
-            </div>
-          </div>
+          
 
           {/* HISTORY (FULL BALIK PUNYA KAMU) */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(6,27,58,.06)]">
             <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
                 <h2 className="text-2xl font-extrabold text-[#061B3A]">
@@ -500,7 +506,9 @@ hover:shadow-lg
             </div>
 
             {history.length === 0 ? (
-              <div className="rounded-3xl bg-slate-50 p-8 text-center">
+              <div className="rounded-3xl bg-gradient-to-r
+from-slate-50
+to-slate-100 p-8 text-center">
                 <p className="font-bold text-slate-600">
                   Belum ada latihan yang diselesaikan. Yuk mulai latihan pertamamu.
                 </p>
@@ -519,7 +527,18 @@ hover:shadow-lg
                  {history.slice(0, 10).map((item) => (
   <div
     key={item.id}
-    className="grid grid-cols-[1.5fr_1fr_0.6fr_0.8fr_1fr] gap-4 border-t border-slate-100 p-4 text-sm text-slate-700"
+    className="
+grid
+grid-cols-[1.5fr_1fr_0.6fr_0.8fr_1fr]
+gap-4
+border-t
+border-slate-100
+p-4
+text-sm
+text-slate-700
+hover:bg-slate-50
+transition
+"
   >
 
     {/* JUDUL */}

@@ -146,8 +146,8 @@ return (
   <main className="min-h-screen bg-slate-50">
     <Navbar />
 
-    <section className="px-6 py-10">
-      <div className="mx-auto max-w-5xl">
+    <section className="px-6 py-10 md:px-10">
+      <div className="mx-auto w-full max-w-[1400px]">
 
         <div className="mb-8">
           <h1 className="text-4xl font-extrabold text-[#061B3A]">
@@ -159,13 +159,15 @@ return (
           </p>
         </div>
 
-        <div className="space-y-5">
+        <div className="w-full space-y-5">
           {results.map((item) => (
             <div
               key={item.id}
               className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
             >
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+              <div
+  className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between"
+>
 
                 <div>
                   <h2 className="text-2xl font-bold text-[#061B3A]">

@@ -235,11 +235,9 @@ question.attempt_answers[0]?.is_doubt ?? false;
       <Navbar />
 
       <section className="px-6 py-10 md:px-10">
-        <div className="mx-auto max-w-6xl">
+  <div className="mx-auto w-full max-w-[1400px]">
           <div className="mb-8 text-center">
-            <div className="mb-4 inline-flex rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-600">
-              Pembahasan
-            </div>
+            
 
             <h1 className="text-4xl font-extrabold text-[#061B3A]">
               Pembahasan {result.exam_packages?.title}

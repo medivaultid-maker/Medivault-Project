@@ -163,13 +163,11 @@ return (
       <Navbar />
 
       <section className="px-6 py-10 md:px-10">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto w-full max-w-[1400px]">
 
           {/* HEADER */}
           <div className="mb-8 text-center">
-            <div className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-600">
-              Hasil Ujian
-            </div>
+            
 
             <h1 className="text-3xl font-extrabold text-[#061B3A]">
               Hasil Ujian {result.exam_packages?.title}
@@ -234,7 +232,7 @@ return (
               </Link>
             </div>
           </div>
-        </div>
+        
 
         {aiReport && (
 <div className="
@@ -336,6 +334,7 @@ text-[#061B3A]
       </div>
     </div>
 )}
+ </div>
       </section>
     </main>
   );

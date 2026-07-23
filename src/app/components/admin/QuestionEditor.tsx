@@ -194,7 +194,13 @@ const deleteEssayAnswer = (
 </div>
 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
 
-<div className="flex h-full flex-col rounded-2xl border-2 border-blue-200 bg-blue-50/40 p-5 shadow-sm">
+<div className="flex h-full flex-col rounded-2xl border-2 border-blue-200 bg-blue-50 p-5 shadow-sm">
+  <div className="mb-6 rounded-xl bg-violet-100 p-4">
+    <span className="text-2xl">📝</span>
+    <h3 className="text-3xl font-extrabold tracking-wide text-[#061B3A] uppercase">
+      SOAL
+    </h3>
+  </div>
 {/* TOPIK */}
 <label className="mb-2 block font-semibold text-slate-700">
 Topik
@@ -222,7 +228,7 @@ Tulis Soal
 </label>
 
 <textarea
-className={textareaClass}
+  className={`${textareaClass} h-[260px] resize-none`}
 value={q.question}
 onChange={(e)=>updateQuestion(i,e.target.value)}
 />
@@ -246,7 +252,13 @@ className="mt-3 max-h-60 rounded-xl border"
 )}
 
 </div>
-<div className="flex h-full flex-col rounded-2xl border-2 border-amber-200 bg-amber-50/40 p-5 shadow-sm">
+<div className="flex h-full flex-col rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5 shadow-sm">
+  <div className="mb-6 rounded-xl bg-blue-100 p-4">
+    <span className="text-2xl">✅</span>
+    <h3 className="text-3xl font-extrabold tracking-wide text-emerald-700 uppercase">
+      JAWABAN
+    </h3>
+  </div>
 {/* JAWABAN CBT */}
 {!isPraktikum && (
 <>
@@ -333,38 +345,16 @@ onChange={(e)=>updateAnswer(i,Number(e.target.value))}
 </div>
 
 {/* PEMBAHASAN */}
-<div className="flex h-full flex-col rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-5 shadow-sm">
+<div className="flex h-full flex-col rounded-2xl border-2 border-violet-300 bg-violet-50 p-5 shadow-sm">
+  <div className="mb-6 rounded-xl bg-emerald-100 p-4">
+    <span className="text-2xl">💡</span>
+    <h3 className="text-3xl font-black tracking-wide text-blue-700 uppercase">
+      PEMBAHASAN
+    </h3>
+  </div>
 <label className="mt-5 block font-semibold">
 Pembahasan
 </label>
-
-
-<div className="mb-3 flex gap-2">
-
-<button
-type="button"
-onMouseDown={(e) => {
-  e.preventDefault();
-  document.execCommand("bold");
-}}
-className="rounded-lg border px-3 py-1 font-bold hover:bg-slate-100"
->
-Bf<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"></div>
-</button>
-
-
-<button
-  type="button"
-  onMouseDown={(e) => {
-    e.preventDefault();
-    document.execCommand("bold");
-  }}
-  className="rounded-lg border px-3 py-1 font-bold hover:bg-slate-100"
->
-  B
-</button>
-
-</div>
 
 
 <div
@@ -374,7 +364,7 @@ Bf<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"></
   contentEditable
   suppressContentEditableWarning
   style={{ whiteSpace: "pre-wrap" }}
-  className="min-h-[180px] w-full rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-700 outline-none focus:border-emerald-400 focus:bg-white"
+  className="h-[260px] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-700 outline-none focus:border-emerald-400 focus:bg-white"
   onInput={(e) => {
     updateDiscussion(i, e.currentTarget.innerHTML);
   }}

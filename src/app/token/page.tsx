@@ -126,9 +126,9 @@ setPaymentStatus("pending");
 
           <h1 style={styles.title}>Aktifkan Akses Latihan Soal</h1>
 
-          <p style={styles.subtitle}>
-            Pilih paket akses sesuai kebutuhan belajar dan mulai berlatih soal Medivault Exam.
-          </p>
+        
+      
+        
         </div>
 
         <div style={styles.tokenStatus}>
@@ -291,7 +291,7 @@ const styles: Record<string, CSSProperties> = {
   minHeight: "100vh",
   background:
     "radial-gradient(circle at top left,#EEF6F3 0%,#F8FAFC 35%,#FFFFFF 100%)",
-  padding: "130px 20px 70px",
+  padding: "64px 24px 90px",
 },
   header: {
   maxWidth: "760px",
@@ -321,7 +321,7 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.7,
   },
   tokenStatus: {
-  maxWidth: "1100px",
+  maxWidth: "1400px",
   margin: "0 auto 24px",
   background: "#FFFFFF",
   border: "1px solid #E2E8F0",
@@ -333,8 +333,9 @@ const styles: Record<string, CSSProperties> = {
   color: "#061B3A",
   boxShadow: "0 14px 40px rgba(6,27,58,.06)",
 },
-  layout: {
-  maxWidth: "1100px",
+
+layout: {
+  maxWidth: "1400px",
   margin: "0 auto",
   display: "flex",
   flexWrap: "wrap",

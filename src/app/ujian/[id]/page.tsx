@@ -825,7 +825,7 @@ lg:overflow-hidden
 "
 >
         {!submitted ? (
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto w-full max-w-[1400px]">
             <div className="mb-2 rounded-3xl border border-slate-100 bg-white p-4 md:p-5 shadow-sm">
               <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                 <div>

@@ -60,7 +60,7 @@ async function checkAdmin() {
   const { data: profiles, error: profileError } = await supabase
   .from("profiles")
   .select("*")
-  .eq("id", "523c6306-ccb3-454b-a5f5-ac68ef4db14f");
+  .in("id", userIds);
 
 console.log("CEK PROFILE:", profiles);
 console.log("PROFILE ERROR:", profileError);
@@ -157,13 +157,12 @@ async function approve(payment: any) {
 </td>
 
               <td className="px-5 py-4 font-semibold text-[#061B3A]">
-                {item.package_name}
-              </td>
+  {item.profiles?.full_name || "-"}
+</td>
 
-              <td className="px-5 py-4">
-                {item.profiles?.full_name || "-"}
-              </td>
-
+<td className="px-5 py-4">
+  {item.package_name}
+</td>
               <td className="px-5 py-4">
                 Rp {item.amount.toLocaleString("id-ID")}
               </td>

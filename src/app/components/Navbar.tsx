@@ -3,6 +3,7 @@
 import { supabase } from "../lib/supabase";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu,
@@ -28,7 +29,8 @@ export default function Navbar() {
   const [email, setEmail] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
-  
+  const pathname = usePathname();
+
 useEffect(() => {
   const loadUser = async () => {
     const {
@@ -96,7 +98,12 @@ setLoadingRole(false);
 
   const links: NavItem[] =
   role === "admin"
-    ? [{ label: "Dashboard Admin", href: "/admin" }]
+    ? [
+        { label: "Dashboard", href: "/admin" },
+        { label: "Tambah Paket", href: "/admin/paket" },
+        { label: "Daftar Paket", href: "/admin/daftar-paket" },
+        { label: "Verifikasi Pembayaran", href: "/admin/payment" },
+      ]
     : isLoggedIn
     ? [
         { label: "Dashboard Belajar", href: "/dashboard" },
@@ -143,17 +150,17 @@ setLoadingRole(false);
         </Link>
 
         {/* DESKTOP MENU */}
-        <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
-          {links.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full px-4 py-2 text-sm font-extrabold text-slate-600 transition hover:bg-[#ECFDF5] hover:text-[#0F766E]"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+<nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
+  {links.map((item) => (
+  <Link
+    key={item.href}
+    href={item.href}
+    className="rounded-full px-4 py-2 text-sm font-extrabold text-slate-600 transition hover:bg-[#ECFDF5] hover:text-[#0F766E]"
+  >
+    {item.label}
+  </Link>
+))}
+</nav>
 
         {/* DESKTOP ACTIONS */}
         <div className="hidden items-center gap-3 lg:flex">

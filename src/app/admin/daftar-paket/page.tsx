@@ -352,103 +352,158 @@ hover:shadow-lg
   </div>
 </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[1100px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow">
+    <div className="overflow-hidden rounded-3xl border border-[#061B3A] bg-white shadow-lg">
 
-          <div className="grid grid-cols-[3fr_0.8fr_1fr_0.8fr_1fr_2.3fr] gap-4 bg-slate-100 px-5 py-4 font-bold">
+  <div className="overflow-x-auto">
 
-            <span>Nama Paket</span>
-            <span>Soal</span>
-            <span>Durasi</span>
-            <span>Token</span>
-            <span>Status</span>
-            <span>Aksi</span>
+    <table className="w-full table-fixed">
 
-          </div>
+      <colgroup>
+        <col className="w-[38%]" />
+        <col className="w-[10%]" />
+        <col className="w-[12%]" />
+        <col className="w-[10%]" />
+        <col className="w-[15%]" />
+        <col className="w-[15%]" />
+      </colgroup>
 
-          {group.items.map((item) => (
-            <div
-              key={item.id}
-              className="grid grid-cols-[3fr_0.8fr_1fr_0.8fr_1fr_2.3fr] items-center border-t px-5 py-5 hover:bg-slate-50 transition"
-            >
+      <thead className="bg-slate-50 border-b border-[#061B3A]">
 
-              <div>
-  <h3 className="font-bold text-[#061B3A]">
-    {item.title}
-  </h3>
+        <tr>
 
-  <p className="mt-1 text-xs text-slate-400">
-    Dibuat {formatDate(item.createdAt)}
-  </p>
-</div>
+          <th className="px-8 py-6 text-left text-lg font-bold text-slate-500">
+            Nama Paket
+          </th>
 
-              <span>{item.totalQuestions}</span>
+          <th className="px-4 py-6 text-center text-lg font-bold text-slate-500">
+            Soal
+          </th>
 
-              <span>{item.duration} m</span>
+          <th className="px-4 py-6 text-center text-lg font-bold text-slate-500">
+            Durasi
+          </th>
 
-              <span>{item.tokenCost}</span>
+          <th className="px-4 py-6 text-center text-lg font-bold text-slate-500">
+            Token
+          </th>
+
+          <th className="px-4 py-6 text-center text-lg font-bold text-slate-500">
+            Status
+          </th>
+
+          <th className="px-4 py-6 text-center text-lg font-bold text-slate-500">
+            Aksi
+          </th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        {group.items.map((item) => (
+
+          <tr
+            key={item.id}
+            className="border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition"
+          >
+
+            <td className="px-8 py-7 align-middle">
+
+              <p className="text-2xl font-bold text-[#061B3A]">
+                {item.title}
+              </p>
+
+              <p className="mt-2 text-sm text-slate-400">
+                Dibuat {formatDate(item.createdAt)}
+              </p>
+
+            </td>
+
+            <td className="py-7 text-center text-2xl font-semibold text-[#061B3A]">
+              {item.totalQuestions}
+            </td>
+
+            <td className="py-7 text-center text-xl text-[#061B3A]">
+              {item.duration} m
+            </td>
+
+            <td className="py-7 text-center text-xl font-semibold text-[#061B3A]">
+              {item.tokenCost}
+            </td>
+
+            <td className="py-7 text-center">
 
               <span
-  className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold ${
-    item.status === "published"
-      ? "bg-emerald-100 text-emerald-700"
-      : "bg-amber-100 text-amber-700"
-  }`}
->
-  {item.status === "published"
-    ? "Published"
-    : "Draft"}
-</span>
+                className={`inline-flex rounded-full px-4 py-2 text-sm font-bold ${
+                  item.status === "published"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {item.status === "published"
+                  ? "Published"
+                  : "Draft"}
+              </span>
 
-              <div className="flex items-center justify-center gap-2">
+            </td>
 
-  <Link
-    href={`/admin/preview/${item.id}`}
-    className="rounded-xl bg-sky-100 p-2 text-sky-700 transition hover:bg-sky-200"
-    title="Preview"
-  >
-    <Eye size={18} />
-  </Link>
+            <td className="py-7">
 
-  <Link
-    href={`/admin/paket/${item.id}`}
-    className="rounded-xl bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
-    title="Edit"
-  >
-    <Pencil size={18} />
-  </Link>
+              <div className="flex justify-center gap-3">
 
-  <button
-    onClick={() => duplicatePackage(item.id)}
-    className="rounded-xl bg-indigo-100 p-2 text-indigo-700 transition hover:bg-indigo-200"
-    title="Duplikat"
-  >
-    <Copy size={18} />
-  </button>
+                <Link
+                  href={`/admin/preview/${item.id}`}
+                  className="rounded-xl bg-sky-100 p-3 text-sky-700 hover:bg-sky-200"
+                >
+                  <Eye size={20} />
+                </Link>
 
-  <button
-    onClick={() => toggleStatus(item.id, item.status ?? "draft")}
-    className="rounded-xl bg-emerald-100 p-2 text-emerald-700 transition hover:bg-emerald-200"
-    title="Ubah Status"
-  >
-    <FileText size={18} />
-  </button>
+                <Link
+                  href={`/admin/paket/${item.id}`}
+                  className="rounded-xl bg-blue-100 p-3 text-blue-700 hover:bg-blue-200"
+                >
+                  <Pencil size={20} />
+                </Link>
 
-  <button
-    onClick={() => deletePackage(item.id)}
-    className="rounded-xl bg-red-100 p-2 text-red-700 transition hover:bg-red-200"
-    title="Hapus"
-  >
-    <Trash2 size={18} />
-  </button>
+                <button
+                  onClick={() => duplicatePackage(item.id)}
+                  className="rounded-xl bg-indigo-100 p-3 text-indigo-700 hover:bg-indigo-200"
+                >
+                  <Copy size={20} />
+                </button>
+
+                <button
+                  onClick={() =>
+                    toggleStatus(item.id, item.status ?? "draft")
+                  }
+                  className="rounded-xl bg-emerald-100 p-3 text-emerald-700 hover:bg-emerald-200"
+                >
+                  <FileText size={20} />
+                </button>
+
+                <button
+                  onClick={() => deletePackage(item.id)}
+                  className="rounded-xl bg-red-100 p-3 text-red-700 hover:bg-red-200"
+                >
+                  <Trash2 size={20} />
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        ))}
+
+      </tbody>
+
+    </table>
+
+  </div>
 
 </div>
-
-            </div>
-          ))}
-
-        </div>
-      </div>
 
     </div>
   );
